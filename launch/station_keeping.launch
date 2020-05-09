@@ -1,0 +1,7 @@
+<launch>
+	<node name="node_simulation" pkg="sailboat" type="simu_sailboat" />
+	
+
+	<node name="node_keeping" pkg="sailboat" type="station_keeping" />
+	
+</launch>
