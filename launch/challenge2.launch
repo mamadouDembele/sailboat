@@ -1,0 +1,30 @@
+<launch>
+	<node name="node_simulation" pkg="sailboat" type="simu_sailboat" />
+
+	<param name="boat_x" type="double" value="35" />
+	<param name="boat_y" type="double" value="40.0" />
+	<param name="psi_wind" type="double" value="-0.85" />
+	<param name="boat_head" type="double" value="0.34" />
+
+
+	<node name="node_keeping" pkg="sailboat" type="station_keeping" />
+	<node name="node_mission2" pkg="sailboat" type="stat_keeping_mission" output="screen"/>
+
+	<param name="radius_r" type="double" value="15.0" />
+	<node name="node_figure_sk" pkg="sailboat" type="figure_sk" />
+	<param name="mode_sk" type="int" value="1" />
+
+	<param name="SKx1" type="double" value="10.0" />
+	<param name="SKy1" type="double" value="-5.0" />
+
+	<param name="SKx2" type="double" value="-40.0" />
+	<param name="SKy2" type="double" value="-50.0" />
+
+	<param name="time_s" type="double" value="60.0" />
+	
+	<node name="node_sk_figure" pkg="sailboat" type="challenge2_figure" />
+	
+	
+		
+	
+</launch>
