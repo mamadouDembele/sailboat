@@ -1,0 +1,15 @@
+<launch>
+	<node name="node_simulation" pkg="sailboat" type="simu_sailboat" />
+
+	<param name="boat_x" type="double" value="-40" />
+	<param name="boat_y" type="double" value="-50.0" />
+	<param name="boat_head" type="double" value="1.75" />
+
+	<node name="node_figure_avoid" pkg="sailboat" type="figure_avoid" />
+	<node name="node_avoidance" pkg="sailboat" type="avoidance" output="screen"/>
+	<param name="mode_sk" type="int" value="0" />
+	<param name="SKx" type="double" value="0." />
+	<param name="SKy" type="double" value="0.0" />
+	<param name="radius_r" type="double" value="30.0" />
+	
+</launch>
