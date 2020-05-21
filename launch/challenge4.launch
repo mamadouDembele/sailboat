@@ -1,0 +1,38 @@
+<launch>
+	<node name="node_simulation" pkg="sailboat" type="simu_sailboat" />
+	<node name="node_hideSeek" pkg="sailboat" type="hide_seek" />
+	<param name="posxa" type="double" value="20.0" />
+	<param name="posya" type="double" value="20.0" />
+	<param name="posxb" type="double" value="20.0" />
+	<param name="posyb" type="double" value="-20.0" />
+	<param name="posxc" type="double" value="-20.0" />
+	<param name="posyc" type="double" value="-20.0" />
+	<param name="posxd" type="double" value="-20.0" />
+	<param name="posyd" type="double" value="20.0" />
+	<group ns="buoy1">
+		<node name="node_stade" pkg="sailboat" type="stade" output="screen" />
+		<param name="posx" type="double" value="20.0" />
+		<param name="posy" type="double" value="20.0" />
+	</group >
+
+	<group ns="buoy2">
+		<node name="node_stade" pkg="sailboat" type="stade" output="screen" />
+		<param name="posx" type="double" value="-20.0" />
+		<param name="posy" type="double" value="20.0" />
+	</group>
+
+	<group ns="buoy3">
+		<node name="node_stade" pkg="sailboat" type="stade" output="screen" />
+		<param name="posx" type="double" value="20.0" />
+		<param name="posy" type="double" value="-20.0" />
+	</group >
+
+	<group ns="buoy4">
+		<node name="node_stade" pkg="sailboat" type="stade" output="screen" />
+		<param name="posx" type="double" value="-20.0" />
+		<param name="posy" type="double" value="-20.0" />
+	</group>
+	
+		
+	
+</launch>
