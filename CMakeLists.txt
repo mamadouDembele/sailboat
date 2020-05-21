@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   tf
+  tf2
 )
 
 ## System dependencies are found with CMake's conventions
@@ -147,10 +148,23 @@ include_directories(
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/sailboat_node.cpp)
 
-add_executable(simu_sailboat src/simu_sailboat.cpp)
-add_executable(heading_follow src/heading_follow.cpp)
-add_executable(line_follow src/line_follow.cpp)
-add_executable(station_keeping src/station_keeping.cpp)
+add_executable(simu_sailboat src/simulation/simu_sailboat.cpp)
+add_executable(heading_follow src/simulation/heading_follow.cpp)
+add_executable(line_follow src/simulation/line_follow.cpp)
+add_executable(station_keeping src/simulation/station_keeping.cpp)
+add_executable(circle src/simulation/circle.cpp)
+add_executable(circle2 src/simulation/circle2.cpp)
+add_executable(triangle src/simulation/triangle.cpp)
+add_executable(avoidance src/simulation/avoidance.cpp)
+add_executable(figure_sk src/simulation/figure_sk.cpp)
+add_executable(figure_avoid src/simulation/figure_avoid.cpp)
+
+#executable for the differentes challenges
+add_executable(fleet_race src/mission/fleet_race.cpp)
+add_executable(stat_keeping_mission src/mission/stat_keeping_mission.cpp)
+add_executable(hide_seek src/mission/hide_seek.cpp)
+add_executable(challenge1_figure src/mission/challenge1_figure.cpp)
+add_executable(challenge2_figure src/mission/challenge2_figure.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -171,6 +185,20 @@ target_link_libraries(simu_sailboat ${catkin_LIBRARIES})
 target_link_libraries(heading_follow ${catkin_LIBRARIES})
 target_link_libraries(line_follow ${catkin_LIBRARIES})
 target_link_libraries(station_keeping ${catkin_LIBRARIES})
+target_link_libraries(circle ${catkin_LIBRARIES})
+target_link_libraries(circle2 ${catkin_LIBRARIES})
+target_link_libraries(triangle ${catkin_LIBRARIES})
+target_link_libraries(avoidance ${catkin_LIBRARIES})
+target_link_libraries(figure_sk ${catkin_LIBRARIES})
+target_link_libraries(figure_avoid ${catkin_LIBRARIES})
+
+#for the challenge
+target_link_libraries(fleet_race ${catkin_LIBRARIES})
+target_link_libraries(stat_keeping_mission ${catkin_LIBRARIES})
+target_link_libraries(hide_seek ${catkin_LIBRARIES})
+target_link_libraries(challenge1_figure ${catkin_LIBRARIES})
+target_link_libraries(challenge2_figure ${catkin_LIBRARIES})
+
 
 #############
 ## Install ##
