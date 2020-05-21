@@ -1,7 +1,14 @@
 <launch>
-	<node name="node_simulation" pkg="sailboat" type="simu_sailboat" />
+	<node name="node_simulation" pkg="sailboat" type="simu_sailboat" output="screen" />
 	
+	<param name="boat_x" type="double" value="10" />
+	<param name="boat_y" type="double" value="-10" />
+	<param name="boat_head" type="double" value="0.85" />
+	<param name="psi_wind" type="double" value="-1.57" />
 
-	<node name="node_heading" pkg="sailboat" type="heading_follow" />
+
+	<node name="node_heading" pkg="sailboat" type="heading_follow" output="screen" />
+	
+	<param name="thetabar" type="double" value="0" />
 	
 </launch>
