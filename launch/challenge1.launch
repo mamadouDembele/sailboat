@@ -1,0 +1,33 @@
+<launch>
+	<node name="node_simulation" pkg="sailboat" type="simu_sailboat" />
+
+	<param name="boat_x" type="double" value="-40" />
+	<param name="boat_y" type="double" value="-50.0" />
+	<param name="boat_head" type="double" value="1.75" />
+	<param name="psi_wind" type="double" value="-0.85" />
+
+
+
+	<node name="node_fleet_race" pkg="sailboat" type="fleet_race" output="screen" />
+
+	<param name="slx" type="double" value="-40" />
+	<param name="sly" type="double" value="-50" />
+
+	<param name="b1x" type="double" value="-10" />
+	<param name="b1y" type="double" value="-10.0" />
+
+	<param name="b2x" type="double" value="0" />
+	<param name="b2y" type="double" value="40" />
+	
+	<param name="b3x" type="double" value="30" />
+	<param name="b3y" type="double" value="25" />
+	
+	<param name="flx" type="double" value="50" />
+	<param name="fly" type="double" value="70" />
+
+	<param name="radius_r" type="double" value="5" />
+	
+	<node name="node_fr_figure" pkg="sailboat" type="challenge1_figure"/>
+		
+	
+</launch>
