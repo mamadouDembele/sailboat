@@ -1,0 +1,17 @@
+<launch>
+
+	<node name="node_simulation" pkg="sailboat" type="simu_sailboat" output="screen"/>
+
+	<param name="boat_x" type="double" value="-20" />
+	<param name="boat_y" type="double" value="-10.0" />
+	<param name="psi_wind" type="double" value="-0.75" />
+	<param name="boat_head" type="double" value="0" />
+
+
+	<node name="node_circle2" pkg="sailboat" type="circle2" output="screen"/>
+
+	<param name="SKx" type="double" value="30" />
+	<param name="SKy" type="double" value="30.0" />
+	<param name="radius" type="double" value="20.0" />
+	
+</launch>
