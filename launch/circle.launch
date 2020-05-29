@@ -1,7 +1,7 @@
 <launch>
 
 	<node name="node_simulation" pkg="sailboat" type="simu_sailboat" />
-
+	<node name="node_draw_waypoint" pkg="sailboat" type="drawwaypoint" />
 	<param name="boat_x" type="double" value="20" />
 	<param name="boat_y" type="double" value="-30.0" />
 	<param name="psi_wind" type="double" value="1.5" />

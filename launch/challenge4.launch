@@ -1,5 +1,6 @@
 <launch>
 	<node name="node_simulation" pkg="sailboat" type="simu_sailboat" />
+	<node name="node_draw_waypoint" pkg="sailboat" type="drawwaypoint" />
 	<node name="node_hideSeek" pkg="sailboat" type="hide_seek" />
 	<param name="posxa" type="double" value="20.0" />
 	<param name="posya" type="double" value="20.0" />

@@ -1,23 +1,18 @@
 <launch>
 	<node name="node_simulation" pkg="sailboat" type="simu_sailboat" />
-
-	<param name="boat_x" type="double" value="30" />
-	<param name="boat_y" type="double" value="40" />
-	<param name="boat_head" type="double" value="0.85" />
-	<param name="psi_wind" type="double" value="-1.57" />
+	<node name="node_draw_waypoint" pkg="sailboat" type="drawwaypoint" />
+	<param name="boat_x" type="double" value="-30" />
+	<param name="boat_y" type="double" value="20" />
+	<param name="boat_head" type="double" value="1.85" />
+	<param name="psi_wind" type="double" value="0" />
 	
 
 	<node name="node_line" pkg="sailboat" type="line_follow" output="screen" />
 
-	<param name="a_x" type="double" value="0" />
-	<param name="a_y" type="double" value="-15" />
-	<param name="b_x" type="double" value="0" />
-	<param name="b_y" type="double" value="30" />
-
-	<!-- <param name="a_x" type="double" value="10" />
-	<param name="a_y" type="double" value="-30" />
-	<param name="b_x" type="double" value="-15" />
-	<param name="b_y" type="double" value="-20" /> -->
+	<param name="a_x" type="double" value="10" />
+	<param name="a_y" type="double" value="0" />
+	<param name="b_x" type="double" value="-30" />
+	<param name="b_y" type="double" value="0" /> 
 	<param name="radius" type="double" value="10" />
 	
 </launch>

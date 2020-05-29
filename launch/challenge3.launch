@@ -1,0 +1,15 @@
+<launch>
+	<node name="node_simulation_area_scanning" pkg="sailboat" type="boats_area_scanning" />
+	<node name="node_draw_waypoint" pkg="sailboat" type="drawwaypoint" />
+	<param name="psi_wind" type="double" value="1.57" />
+	
+
+	<node name="node_area_scanning" pkg="sailboat" type="area_scanning_challenge" output="screen" />
+
+	<param name="a_x" type="double" value="10" />
+	<param name="a_y" type="double" value="0" />
+	<param name="b_x" type="double" value="-30" />
+	<param name="b_y" type="double" value="0" /> 
+	<param name="radius" type="double" value="10" />
+	
+</launch>

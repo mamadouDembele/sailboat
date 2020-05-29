@@ -6,11 +6,12 @@
 	<param name="psi_wind" type="double" value="-0.85" />
 	<param name="boat_head" type="double" value="0.34" />
 
-	<node name="node_mission2" pkg="sailboat" type="stat_keeping_mission" output="screen"/>
-	<node name="node_figure_triangle" pkg="sailboat" type="figure_triangle" />
+	<node name="node_mission2_version2" pkg="sailboat" type="stat_mission2_version2" output="screen"/>
+	<node name="node_figure_avoid" pkg="sailboat" type="figure_avoid" />
+	<node name="node_figure_sk" pkg="sailboat" type="figure_sk" />
+	<node name="node_sk_figure" pkg="sailboat" type="challenge2_figure" />
 
 	<param name="radius_r" type="double" value="15.0" />
-	<node name="node_figure_sk" pkg="sailboat" type="figure_sk" />
 
 	<param name="SKx1" type="double" value="10.0" />
 	<param name="SKy1" type="double" value="-5.0" />
@@ -19,8 +20,6 @@
 	<param name="SKy2" type="double" value="-50.0" />
 
 	<param name="time_s" type="double" value="80.0" />
-	
-	<node name="node_sk_figure" pkg="sailboat" type="challenge2_figure" />
 	
 	
 		

@@ -1,7 +1,14 @@
 <launch>
 	<node name="node_simulation" pkg="sailboat" type="simu_sailboat" />
-	
+	<node name="node_draw_waypoint" pkg="sailboat" type="drawwaypoint" />
+	<param name="boat_x" type="double" value="-30" />
+	<param name="boat_y" type="double" value="30" />
+	<param name="boat_head" type="double" value="1.25" />
+	<param name="psi_wind" type="double" value="0.75" />
+
 
 	<node name="node_triangle" pkg="sailboat" type="triangle" output="screen"/>
+	<node name="node_figure_triangle" pkg="sailboat" type="figure_triangle" />
+	<param name="radius_r" type="double" value="15" />
 	
 </launch>
