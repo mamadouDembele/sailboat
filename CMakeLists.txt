@@ -110,16 +110,10 @@ include_directories(${Eigen3_INCLUDE_DIRS})
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES sailboat
-	#CATKIN_DEPENDS
-  		#geometry_msgs 
-		#message_runtime 
-		#roscpp 
-		#rospy 
-		#std_msgs 
-		#tf
-#  DEPENDS system_lib
+  #INCLUDE_DIRS include
+  #LIBRARIES Fonction
+  #CATKIN_DEPENDS geometry_msgs message_runtime roscpp rospy std_msgs tf
+  #DEPENDS
 )
 
 ###########
@@ -128,14 +122,15 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-include_directories(
-# include
-  ${catkin_INCLUDE_DIRS}
-)
+include_directories( include 
+	${catkin_INCLUDE_DIRS})
+	#${Eigen3_INCLUDE_DIRS} )
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
 #   src/${PROJECT_NAME}/sailboat.cpp
+
+#add_library(Fonction src/Fonction.cpp)
 # )
 
 ## Add cmake target dependencies of the library
@@ -149,6 +144,7 @@ include_directories(
 # add_executable(${PROJECT_NAME}_node src/sailboat_node.cpp)
 
 add_executable(simu_sailboat src/simulation/simu_sailboat.cpp)
+add_executable(drawwaypoint src/simulation/drawwaypoint.cpp)
 add_executable(heading_follow src/simulation/heading_follow.cpp)
 add_executable(line_follow src/simulation/line_follow.cpp)
 add_executable(station_keeping src/simulation/station_keeping.cpp)
@@ -158,13 +154,18 @@ add_executable(triangle src/simulation/triangle.cpp)
 add_executable(avoidance src/simulation/avoidance.cpp)
 add_executable(figure_sk src/simulation/figure_sk.cpp)
 add_executable(figure_avoid src/simulation/figure_avoid.cpp)
+add_executable(figure_triangle src/simulation/figure_triangle.cpp)
 
 #executable for the differentes challenges
 add_executable(fleet_race src/mission/fleet_race.cpp)
 add_executable(stat_keeping_mission src/mission/stat_keeping_mission.cpp)
+add_executable(stat_mission2_version2 src/mission/stat_mission2_version2.cpp)
 add_executable(hide_seek src/mission/hide_seek.cpp)
 add_executable(challenge1_figure src/mission/challenge1_figure.cpp)
 add_executable(challenge2_figure src/mission/challenge2_figure.cpp)
+add_executable(area_scanning_figure src/mission/area_scanning_figure.cpp)
+add_executable(boats_area_scanning src/mission/boats_area_scanning.cpp)
+add_executable(area_scanning_challenge src/mission/area_scanning_challenge.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -181,7 +182,9 @@ add_executable(challenge2_figure src/mission/challenge2_figure.cpp)
 #   ${catkin_LIBRARIES}
 # )
 
+#target_link_libraries(Fonction ${catkin_LIBRARIES})
 target_link_libraries(simu_sailboat ${catkin_LIBRARIES})
+target_link_libraries(drawwaypoint ${catkin_LIBRARIES})
 target_link_libraries(heading_follow ${catkin_LIBRARIES})
 target_link_libraries(line_follow ${catkin_LIBRARIES})
 target_link_libraries(station_keeping ${catkin_LIBRARIES})
@@ -191,13 +194,18 @@ target_link_libraries(triangle ${catkin_LIBRARIES})
 target_link_libraries(avoidance ${catkin_LIBRARIES})
 target_link_libraries(figure_sk ${catkin_LIBRARIES})
 target_link_libraries(figure_avoid ${catkin_LIBRARIES})
+target_link_libraries(figure_triangle ${catkin_LIBRARIES})
 
 #for the challenge
 target_link_libraries(fleet_race ${catkin_LIBRARIES})
 target_link_libraries(stat_keeping_mission ${catkin_LIBRARIES})
+target_link_libraries(stat_mission2_version2 ${catkin_LIBRARIES})
 target_link_libraries(hide_seek ${catkin_LIBRARIES})
 target_link_libraries(challenge1_figure ${catkin_LIBRARIES})
 target_link_libraries(challenge2_figure ${catkin_LIBRARIES})
+target_link_libraries(area_scanning_figure ${catkin_LIBRARIES})
+target_link_libraries(boats_area_scanning ${catkin_LIBRARIES})
+target_link_libraries(area_scanning_challenge ${catkin_LIBRARIES})
 
 
 #############
@@ -222,18 +230,20 @@ target_link_libraries(challenge2_figure ${catkin_LIBRARIES})
 
 ## Mark libraries for installation
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_libraries.html
-# install(TARGETS ${PROJECT_NAME}
+#install(
+#   TARGETS Fonction
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
-# )
+#)
 
 ## Mark cpp header files for installation
-# install(DIRECTORY include/${PROJECT_NAME}/
+#install(
+#   DIRECTORY include/Fonction/
 #   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 #   FILES_MATCHING PATTERN "*.h"
-#   PATTERN ".svn" EXCLUDE
-# )
+   #PATTERN ".svn" EXCLUDE
+#)
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 # install(FILES
