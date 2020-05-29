@@ -143,7 +143,7 @@ void headCallback(const geometry_msgs::Quaternion::ConstPtr& msg) {
 
 int main(int argc, char **argv)
 {   
-	ros::init(argc, argv, "node_mission2");
+	ros::init(argc, argv, "node_mission2_version2");
     ros::NodeHandle n;
     ros::Subscriber pos_sail= n.subscribe("boat_pose", 1000, poseCallback);
     ros::Subscriber head_sail= n.subscribe("heading_boat", 1000, headCallback);
@@ -154,9 +154,10 @@ int main(int argc, char **argv)
     ros::Publisher pointa = n.advertise<geometry_msgs::Point>("a", 1000);
     ros::Publisher pointb = n.advertise<geometry_msgs::Point>("b", 1000);
     ros::Publisher pointc = n.advertise<geometry_msgs::Point>("c", 1000);
-    ros::Publisher pointa_triangle = n.advertise<geometry_msgs::Point>("a_triangle", 1000);
-    ros::Publisher pointb_triangle = n.advertise<geometry_msgs::Point>("b_triangle", 1000);
-    ros::Publisher pointc_triangle = n.advertise<geometry_msgs::Point>("c_triangle", 1000);
+    ros::Publisher pointa_avoid = n.advertise<geometry_msgs::Point>("a_avoid", 1000);
+    ros::Publisher pointb_avoid = n.advertise<geometry_msgs::Point>("b_avoid", 1000);
+    ros::Publisher pointc_avoid = n.advertise<geometry_msgs::Point>("c_avoid", 1000);
+    ros::Publisher pointd_avoid = n.advertise<geometry_msgs::Point>("d_avoid", 1000);
     ros::Publisher pointd = n.advertise<geometry_msgs::Point>("d", 1000);
     ros::Publisher radius_rc = n.advertise<std_msgs::Float64>("radius_rc", 1000);
     ros::Publisher radius_pub = n.advertise<std_msgs::Float64>("radius_r", 1000);
@@ -327,91 +328,108 @@ int main(int argc, char **argv)
 
         	else{
 
-                geometry_msgs::Point cA, cB, cC, cSK;
-                std_msgs::Float64 rad_rc, rad_r;
-                visualization_msgs::Marker marker;
+                geometry_msgs::Point cA, cB, cC, cD, cSK;
+                std_msgs::Float64 radius;
 
-                Eigen::Matrix2d Rot;
-                Rot << cos(psi_w), -sin(psi_w), 
+                Eigen::Matrix2d R;
+                R << cos(psi_w), -sin(psi_w), 
                     sin(psi_w),cos(psi_w);
 
-                double R=r/2; // this parameter can change
+                double l=r/3, L=r/3; // this parameter can change
 
-                Eigen::Vector2d a_r1={R, 0}, b_r1={-R/2, R*sqrt(3)/2}, c_r1={-R/2, -R*sqrt(3)/2};
+                Eigen::Vector2d a_r1={-l, -L/2},b_r1={l, -L/3-l*tan(M_PI/3)};
+                Eigen::Vector2d c_r1={l, L/2},d_r1={-l, L/3+l*tan(M_PI/3)};
 
                 // In the global frame
-                Eigen::Vector2d a=Rot*a_r1+SK2, c=Rot*c_r1+SK2, b=Rot*b_r1+SK2;
+                Eigen::Vector2d a=R*a_r1+SK2,d=R*d_r1+SK2;
+                Eigen::Vector2d c=R*c_r1+SK2,b=R*b_r1+SK2;
 
                 if (initStateFinie==true)
                 {
-                    double d1=norme(m-a);
-                    double d2=norme(m-b);
-                    double d3=norme(m-c);
-                    if (d1==min(min(d1,d2),d3))
-                    {
-                        q=0;
-                        ROS_INFO("State 0");
-                    }
-                    
-                    if (d2==min(min(d1,d2),d3))
+                    double d0=norme(m-a);
+                    double d1=norme(m-b);
+                    double d2=norme(m-c);
+                    double d3=norme(m-d);
+
+                    if (d0==min(min(d0,d1),min(d2,d3)))
                     {
                         q=1;
                         ROS_INFO("State 1");
                     }
 
-                    if (d3==min((d1,d2),d3))
+                    if (d1==min(min(d0,d1),min(d2,d3)))
                     {
                         q=2;
                         ROS_INFO("State 2");
                     }
+
+                    if (d2==min(min(d0,d1),min(d2,d3)))
+                    {
+                        q=3;
+                        ROS_INFO("State 3");
+                    }
+
+                    else
+                    {
+                        q=0;
+                        ROS_INFO("State 0");
+                    }
                     initStateFinie=false;
                 }
 
-                // State finite machine
-                if ((q==0 && (b-a)[0]*(b-m)[0]+(b-a)[1]*(b-m)[1]<0) || (norme(b-m)<norme(a-b)/4))
+                // Machine d'état
+                if ((q==0 && (a-d)[0]*(a-m)[0]+(a-d)[1]*(a-m)[1]<0) || (q==0 && norme(a-m)<norme(a-d)/3))
                 {
                     ROS_INFO("State 1");
                     q=1;
                 }
 
-                if ((q==1 && (c-b)[0]*(c-m)[0]+(c-b)[1]*(c-m)[1]<0) || (norme(c-m)<norme(c-b)/4))
+                if ((q==1 && (b-a)[0]*(b-m)[0]+(b-a)[1]*(b-m)[1]<0) || (q==1 && norme(b-m)<norme(b-a)/3))
                 {
                     ROS_INFO("State 2");
                     q=2;
                 }
+                if ((q==2 && (c-b)[0]*(c-m)[0]+(c-b)[1]*(c-m)[1]<0) || (q==2 && (norme(c-m)<norme(c-b)/3)) )
+                {
+                    ROS_INFO("State 3");
+                    q=3;
+                }
 
-                if ((q==2 && (a-c)[0]*(a-m)[0]+(a-c)[1]*(a-m)[1]<0) || (norme(a-m)<norme(a-c)/4))
+                if ((q==3 && (d-c)[0]*(d-m)[0]+(d-c)[1]*(d-m)[1]<0) || (q==3 && (norme(d-m)<norme(d-c)/3)))
                 {
                     ROS_INFO("State 0");
                     q=0;
                 }
 
-
                 if (q==0)
-                    controler_line(m, theta, psi_w, a, b, ur, us);
+                    controler_line(m, theta, psi_w, d, a, ur, us);
                 if (q==1)
-                    controler_line(m, theta, psi_w, b, c, ur, us);
+                    controler_line(m, theta, psi_w, a, b, ur, us);
                 if (q==2)
-                    controler_line(m, theta, psi_w, c, a, ur, us);
+                    controler_line(m, theta, psi_w, b, c, ur, us);
+                if (q==3)
+                    controler_line(m, theta, psi_w, c, d, ur, us);
 
                 
+                //-------publication of the command-------//
                 msg.x=ur;
                 msg.y=us;
                 msg.z=0;
                 com_servo.publish(msg);
 
+                //--------publication for the visualisation---------//
                 publication_point(cA, a);
                 publication_point(cSK, SK2);
                 publication_point(cB, b);
                 publication_point(cC, c);
-                publication_float(rad_rc, R);
-                publication_float(rad_r, r);
+                publication_point(cD, d);
+                publication_float(radius, r);
 
-                pointa_triangle.publish(cA);
-                pointb_triangle.publish(cB);
-                pointc_triangle.publish(cC);
-                radius_rc_pub.publish(rad_rc);
-                radius_r_pub.publish(rad_r);
+                pointa_avoid.publish(cA);
+                pointb_avoid.publish(cB);
+                pointc_avoid.publish(cC);
+                pointd_avoid.publish(cD);
+                radius_pub.publish(radius);
                 pointsk.publish(cSK);
         	}
         	

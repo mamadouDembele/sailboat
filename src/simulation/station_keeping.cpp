@@ -2,7 +2,6 @@
 #include "eigen3/Eigen/Dense"
 #include <vector>
 #include <math.h>
-#include "visualization_msgs/Marker.h"
 #include "geometry_msgs/PoseStamped.h"
 #include "geometry_msgs/Point.h"
 #include "tf/tf.h"
@@ -10,17 +9,15 @@
 #include "geometry_msgs/Vector3.h"
 #include "geometry_msgs/Twist.h"
 #include "std_msgs/Float64.h"
-#include "std_msgs/Bool.h"
 
 using namespace std;
-bool initStateFinie=true, cond=true, cond2=true, new_sk;
+bool initStateFinie=true;
 Eigen::Vector2d m, SK;
-double r, zeta=M_PI/4, urmax=M_PI/4, q, q_h=1;
+double r, zeta=M_PI/4, urmax=M_PI/4, q;
 double theta, psi_w;
-double c=1.5*2/M_PI, ks=1.0;
+double Gamma=M_PI/4, ks=1.0;
 double us, ur;
 tf::Quaternion q_sail, q_wind;
-int mode;
 
 
 //-----Fonction-----//
@@ -63,22 +60,13 @@ void f(Eigen::Vector2d m, Eigen::Matrix2d D, Eigen::Vector2d c, Eigen::Vector2d&
 }
 
 
-void controler_line(Eigen::Vector2d m, double theta, double psi_w, Eigen::Vector2d a, Eigen::Vector2d b, double& ur, double& us, double& q_h)
+void controler_line(Eigen::Vector2d m, double theta, double psi_w, Eigen::Vector2d a, Eigen::Vector2d b, double& ur, double& us)
 {
 	double nor=norme(b-a);
 	double e=((b-a)[0]*(m-a)[1]-(b-a)[1]*(m-a)[0])/nor;
 	double phi=angle(b-a);
 	double theta_bar;
-	theta_bar=phi-c*atan(e/r);
-	if (fabs(e)>r/2)
-	{
-		q_h=sign(e);
-	}
-
-	if ((cos(psi_w-theta_bar)+cos(zeta))<0 || (fabs(e)<r && ((cos(psi_w-phi)+cos(zeta))<0)))
-	{
-		theta_bar=M_PI+psi_w - q_h*zeta;
-	}
+	theta_bar=phi-2*Gamma*atan(e/2)/M_PI;
 	
 	if (cos(theta-theta_bar)>=0)
 	{
@@ -106,8 +94,6 @@ void controller_circle(Eigen::Vector2d m, double theta, double psi_w, Eigen::Mat
 		ur=urmax*sign(sin(theta-theta_bar));
 	}
 	us=ks*(M_PI/4)*(cos(psi_w-theta_bar)+1);
-	//us=(norme(A)-vist);
-	//ROS_INFO("Tout va bien ur=%f, us=%f",ur,us);
 
 }
 
@@ -119,18 +105,6 @@ void poseCallback(const geometry_msgs::Point::ConstPtr& msg) {
     m[1]=msg->y;
 }
 
-void skCallback(const geometry_msgs::Point::ConstPtr& msg) {
-    SK[0]=msg->x;
-    SK[1]=msg->y;
-}
-
-void rCallback(const std_msgs::Float64::ConstPtr& msg) {
-    r=msg->data;
-}
-
-void new_skCallback(const std_msgs::Bool::ConstPtr& msg) {
-    new_sk=msg->data;
-}
 
 void windCallback(const geometry_msgs::Quaternion::ConstPtr& msg) {
     q_wind[0]=msg->x;
@@ -166,34 +140,18 @@ int main(int argc, char **argv)
     ros::Publisher radius_rc = n.advertise<std_msgs::Float64>("radius_rc", 1000);
     ros::Publisher radius_pub = n.advertise<std_msgs::Float64>("radius_r", 1000);
     ros::Publisher pointsk = n.advertise<geometry_msgs::Point>("sk", 1000);
-    ros::Publisher time_pub = n.advertise<std_msgs::Float64>("time_stay", 1000);
-    ros::Subscriber sub_sk= n.subscribe("sk_point", 1000, skCallback);
-    ros::Subscriber sub_q= n.subscribe("q", 1000, new_skCallback);
-    ros::Subscriber sub_rad= n.subscribe("radius", 1000, rCallback);
 
-
-	//-----------select the mode------------//
-    n.param<int>("mode_sk",mode,0);
-    if (mode==0)
-    {
-    	n.param<double>("SKx", SK[0], 0);
-    	n.param<double>("SKy", SK[1], 0);
-    	n.param<double>("radius_r", r, 0);
-    	ROS_INFO("mode 0"); // this mode is use to test the station keeping's algorithms
-    }
-
-    else{
-    	
-    	ROS_INFO("mode 1"); // this mode is use for the challenge 2
-    }
-
+  
+	n.param<double>("SKx", SK[0], 0);
+	n.param<double>("SKy", SK[1], 0);
+	n.param<double>("radius_r", r, 0);
+    
     ros::Rate loop_rate(100);
     double t0 = ros::Time::now().toSec();
     while(ros::ok()){
     	geometry_msgs::Vector3 msg;
-    	geometry_msgs::Point cA, cB, cC, cD, cC1, cC2, cSK, msg_c;
-    	std_msgs::Float64 radius, rad_r, Ts;
-    	visualization_msgs::Marker marker, points, points1, points2;
+    	geometry_msgs::Point cA, cB, cC, cD, cC1, cC2, cSK;
+    	std_msgs::Float64 radius, rad_r;
 
     	double roll,pitch;
         tf::Matrix3x3(q_sail).getRPY(roll, pitch, theta);
@@ -283,43 +241,14 @@ int main(int argc, char **argv)
 	    	}
 
 	    	if (q==0)
-	    		controler_line(m, theta, psi_w, b, d, ur, us, q_h);
+	    		controler_line(m, theta, psi_w, b, d, ur, us);
 	    	if (q==1)
 	    		controller_circle(m, theta, psi_w, D1, c1, ur, us);
 	    	if (q==2)
-	    		controler_line(m, theta, psi_w, c, a, ur, us, q_h);
+	    		controler_line(m, theta, psi_w, c, a, ur, us);
 	    	if (q==3)
 	    		controller_circle(m, theta, psi_w, D2, c2, ur, us);
 
-	    	//-------------------------------//
-	    	if (mode !=0)
-	    	{
-	    		double ts, tsf, t_s;
-	    		if (norme(m-SK)<r && cond==true)
-		    	{	
-		    		ROS_INFO("we enter in the circle");
-		    		ts=ros::Time::now().toSec();
-		    		//ROS_INFO("ts=%f",ts);
-		    		cond=false;
-		    	}
-
-		    	if (norme(m-SK)<r){
-		    		tsf=ros::Time::now().toSec();
-		    	}
-
-		    	if (cond==false){
-		    		t_s=tsf-ts;
-		    		Ts.data=t_s;
-		    		time_pub.publish(Ts);
-		    	}
-
-		    	//-------we change the station keeping point--------//
-		    	if (new_sk==true && cond2==true)
-		    	{
-		    		initStateFinie=true;
-		    		cond2=false;
-		    	}
-	    	}
 			
 			//-------publication of the command-------//
 	    	msg.x=ur;

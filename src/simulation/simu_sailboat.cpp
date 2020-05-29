@@ -3,6 +3,7 @@
 #include "ros/ros.h"
 #include <vector>
 #include <math.h>
+#include <algorithm>
 #include "visualization_msgs/Marker.h"
 #include "geometry_msgs/PoseStamped.h"
 #include "tf/tf.h"
@@ -13,15 +14,20 @@
 #include <tf2_ros/transform_broadcaster.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <tf2/LinearMath/Quaternion.h>
+#include "std_msgs/Float64.h"
 
 
 using namespace std;
 
 double dt=0.01;// dt is the simulation step 
 double ur=0,us=0; //the input of the sailboat
-double a=1; // velocity of the "true" wind
+double a=2; // velocity of the "true" wind
 double psi_w; //the angle of the "true" wind
-double p1=0.1, p2=1,p3=6000, p4=1000, p5=2000,p6=1,p7=1,p8=2,p9=300,p10=10000;
+double delta_s;
+//p1=0.125; p2=29.99; p3=96.43; p4=58.07; p5=120.65; p6=0.1; p7=0; p8=0.5; p9=10; p10=29.87; p11=0; % Plymouth
+//p1=0.03; p2=40; p3=6000; p4=200; p5=1500; p6=0.5; p7=0.5; p8=2; p9=300; p10=400; p11=0.2; % Aland
+double p1=0.05, p2=0.2, p3=6000, p4=1000, p5=2000, p6=1, p7=1, p8=2, p9=300, p10=10000, p11=1; // Vamos
+//double p1=0.1, p2=1,p3=6000, p4=1000, p5=2000,p6=1,p7=1,p8=2,p9=300,p10=10000;
 vector<double> x={0,0,0,0.0,0.0}; // the state vector of the sailboat
 vector<double> xdot={0.0,0.0,0.0,0.0,0.0};
 
@@ -55,23 +61,22 @@ void Euler_integration(vector<double>& x, vector<double> xdot)
 }
 
 // Dynamique of the sailboat
-void f(double u1, double u2, vector<double> x, vector<double>& xdot, double psi_w)
+void f(double u1, double u2, vector<double> x, vector<double>& xdot, double psi_w, double& delta_s)
 {
-    vector<double> wap={a*cos(psi_w-x[2])-x[3],a*sin(psi_w)-x[2]};
+    vector<double> wap={a*cos(psi_w-x[2])-x[3],a*sin(psi_w-x[2])};
     double psi_wap=angle(wap);
     double norm_wap=norme(wap);
     double sigma=cos(psi_wap)+cos(u2);
-    double delta_s;
     if (sigma <=0)
         delta_s= M_PI + psi_wap;
     else
         delta_s=-sign(sin(psi_wap))*u2;
     double fr=p5*x[3]*sin(u1);
-    double fs=p4*norm_wap*sin(delta_s)-psi_wap;
+    double fs=p4*norm_wap*sin(delta_s-psi_wap);
     xdot[0]=x[3]*cos(x[2])+ p1*a*cos(psi_w);
     xdot[1]=x[3]*sin(x[2])+ p1*a*sin(psi_w);
     xdot[2]=x[4];
-    xdot[3]=(fs*sin(delta_s)-fr*sin(u1)-p2*x[3]*x[3])/p9;
+    xdot[3]=(fs*sin(delta_s)-fr*p11*sin(u1)-p2*pow(x[3],2))/p9;
     xdot[4]=(fs*(p6-p7*cos(delta_s))-p8*fr*cos(u1)-p3*x[4]*x[3])/p10;
 }
 
@@ -88,14 +93,18 @@ int main(int argc, char **argv)
     ros::NodeHandle n;
     ros::Publisher pose_state = n.advertise<geometry_msgs::Point>("boat_pose", 1000);
     ros::Publisher twist_state = n.advertise<geometry_msgs::Twist>("boat_twist", 1000);
+    ros::Publisher speed_wind = n.advertise<std_msgs::Float64>("speed_truewind", 1000);
+    ros::Publisher speed_boat = n.advertise<std_msgs::Float64>("speed_boat", 1000);
     ros::Publisher wind = n.advertise<geometry_msgs::Quaternion>("wind_angle", 1000);
     ros::Publisher cap = n.advertise<geometry_msgs::Quaternion>("heading_boat", 1000);
     ros::Publisher boat_pub = n.advertise<visualization_msgs::Marker>( "visualization_boat",0 );
     ros::Publisher sail_pub = n.advertise<visualization_msgs::Marker>( "visualization_sail",0 );
     ros::Publisher rudder_pub = n.advertise<visualization_msgs::Marker>( "visualization_rudder",0 );
     ros::Publisher wind_pub = n.advertise<visualization_msgs::Marker>( "visualization_wind",0 );
+    //ros::Publisher pose_boat_pub = n.advertise<visualization_msgs::Marker>( "visualization_pos_boat",0 );
     ros::Subscriber commande = n.subscribe("actuators", 1000, commCallback);
 
+    std_msgs::Float64 msg_speed_wind, msg_speed_boat;
     geometry_msgs::Point msg_pose;
     geometry_msgs::Twist msg_twist;
     geometry_msgs::Quaternion msg_wind;
@@ -109,6 +118,7 @@ int main(int argc, char **argv)
     visualization_msgs::Marker marker_sail;
     visualization_msgs::Marker marker_rudder;
     visualization_msgs::Marker marker_wind;
+    visualization_msgs::Marker marker_B;
     
 
     geometry_msgs::TransformStamped transformStamped_boat;
@@ -133,14 +143,13 @@ int main(int argc, char **argv)
     n.param<double>("boat_x", x[0], 0);
     n.param<double>("boat_y", x[1], 0);
     n.param<double>("boat_head", x[2], 0);
-    ros::Rate loop_rate(100);
-
+    ros::Rate loop_rate(300);
     while (ros::ok()) {
         
 
-        ROS_INFO("psi_w=%f", psi_w);
-        ROS_INFO("boat_x=%f", x[0]);
-        ROS_INFO("boat_head=%f", x[2]);
+        //ROS_INFO("psi_w=%f", psi_w);
+        //ROS_INFO("boat_x=%f", x[0]);
+        //ROS_INFO("boat_head=%f", x[2]);
         // Publication of the wind angle
         tf::Quaternion q_wind;
         q_wind.setRPY(0, 0, psi_w);
@@ -148,11 +157,16 @@ int main(int argc, char **argv)
         wind.publish(msg_wind);
 
         // Publication of the position
-        f(ur,us,x,xdot,psi_w);
+        f(ur,us,x,xdot,psi_w, delta_s);
         Euler_integration(x,xdot);
+        ROS_INFO("delta_s=%f", delta_s);
+        msg_speed_boat.data=x[3];
+        msg_speed_wind.data=a;
         msg_pose.x=x[0];
         msg_pose.y=x[1];
         msg_pose.z=0;
+        speed_boat.publish(msg_speed_boat);
+        speed_wind.publish(msg_speed_wind);
         pose_state.publish(msg_pose);
 
         //Publication of the angle of the boat
@@ -203,7 +217,7 @@ int main(int argc, char **argv)
 
         //--------------------------------------//
         tf::Quaternion q_sail;
-        q_sail.setRPY(0, 0, us);
+        q_sail.setRPY(0, 0, delta_s);
         transformStamped_sail.header.stamp = ros::Time::now();
         transformStamped_sail.transform.translation.x =1.8;
         transformStamped_sail.transform.translation.y = 0.0;//-0.2;
@@ -263,7 +277,6 @@ int main(int argc, char **argv)
         marker_rudder.color.b = 0.0;
         marker_rudder.mesh_resource = "package://sailboat/meshs/rudder.STL";
 
-
         //visualisation wind
         marker_wind.header.frame_id = "map";
         marker_wind.header.stamp = ros::Time();
@@ -282,6 +295,8 @@ int main(int argc, char **argv)
         marker_wind.color.r = 1.0f;
         marker_wind.color.g = 0.0f;
         marker_wind.color.b = 0.0f;
+
+        //pose_boat_pub.publish(marker_B);
         wind_pub.publish( marker_wind );
         boat_pub.publish( marker_boat );
         rudder_pub.publish( marker_rudder );

@@ -4,6 +4,7 @@
 #include "eigen3/Eigen/Dense"
 #include <vector>
 #include <math.h>
+#include <algorithm>
 #include "visualization_msgs/Marker.h"
 #include "geometry_msgs/PoseStamped.h"
 #include "geometry_msgs/Point.h"
@@ -11,6 +12,7 @@
 #include "geometry_msgs/Quaternion.h"
 #include "geometry_msgs/Vector3.h"
 #include "geometry_msgs/Twist.h"
+#include "std_msgs/Float64.h"
 
 
 using namespace std;
@@ -19,11 +21,12 @@ Eigen::Vector2d m; // Position of the boat
 Eigen::Vector2d a, b; // the ligne we want to follow
 double r, zeta=M_PI/4, urmax=M_PI/4;// rayon de couloir, l'angle de près, l'angle maximale du gouvernail
 double theta, psi_w; // cap de la voile, l'angle du vent
-double q=1; // valeur d'hystérésis 
+double q=1; // valeur d'hystérésis and the speed of the wind
 double ur,us;
 double ks=1.0; // constante k pour regler l'angle de la sail
-double c=1.5*2/M_PI; // Constance pour rendre la ligne plus attractive
+double Gamma=M_PI/4; // Constance pour rendre la ligne plus attractive
 tf::Quaternion q_sail, q_wind;
+
 
 double sign(double x)
 {
@@ -51,7 +54,7 @@ void controler_line(Eigen::Vector2d m, double theta, double psi_w, Eigen::Vector
 	double e=((b-a)[0]*(m-a)[1]-(b-a)[1]*(m-a)[0])/nor;
 	double phi=angle(b-a);
 	double theta_bar;
-	theta_bar=phi-c*atan(e/r);
+	theta_bar=phi-2*Gamma*atan(e/r)/M_PI;
 	if (fabs(e)>r/2)
 	{
 		q=sign(e);
@@ -70,6 +73,8 @@ void controler_line(Eigen::Vector2d m, double theta, double psi_w, Eigen::Vector
 	{
 		ur=urmax*sign(sin(theta-theta_bar));
 	}
+
+
 	us=ks*(M_PI/4)*(cos(psi_w-theta_bar)+1);
 
 }
@@ -93,6 +98,7 @@ void headCallback(const geometry_msgs::Quaternion::ConstPtr& msg) {
     q_sail[2]=msg->z;
     q_sail[3]=msg->w;
 }
+
 
 int main(int argc, char **argv)
 {   
@@ -130,8 +136,6 @@ int main(int argc, char **argv)
 
 		if (tf-t0<0.3)
         {
-        	//ROS_INFO("mx=%f", m[0]);
-	        //ROS_INFO("my=%f", m[1]);
         	ROS_INFO("Do anything");
         }
         
@@ -139,6 +143,7 @@ int main(int argc, char **argv)
         	//ROS_INFO("mx=%f", m[0]);
 	        //ROS_INFO("my=%f", m[1]);
 	    	controler_line(m, theta, psi_w, a, b, ur, us,q);
+	    	ROS_INFO("angle_sail us=%f", us);
 	    	msg.x=ur;
 	    	msg.y=us;
 	    	msg.z=0;

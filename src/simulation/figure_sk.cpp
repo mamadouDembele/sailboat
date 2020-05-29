@@ -118,7 +118,7 @@ int main(int argc, char **argv)
 			tf::quaternionTFToMsg(q, marker.pose.orientation);
 	        marker.color.r = 0.0f;
 	        marker.color.g = 1.0f;
-	        marker.color.b = 0.0f;
+	        marker.color.b = 1.0f;
 
 	        marker2.header.frame_id = "map";
 	        marker2.header.stamp = ros::Time::now();
@@ -178,7 +178,7 @@ int main(int argc, char **argv)
 	    	//points.scale.y = 0.2;
 	    	points1.color.a = 1.0;
 	        points1.color.r = 1.0f;
-	        points1.color.g = 0.0f;
+	        points1.color.g = 1.0f;
 	        points1.color.b = 0.0f;
 	        for (double i = 0.0; i < 1.1; i+=0.01)
 	        {
@@ -204,7 +204,7 @@ int main(int argc, char **argv)
 	    	//points.scale.y = 0.2;
 	    	points2.color.a = 1.0;
 	        points2.color.r = 1.0f;
-	        points2.color.g = 0.0f;
+	        points2.color.g = 1.0f;
 	        points2.color.b = 0.0f;
 	        for (double i = 0.0; i < 1.1; i+=0.01)
 	        {

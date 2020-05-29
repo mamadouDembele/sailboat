@@ -12,20 +12,21 @@
 #include "geometry_msgs/Quaternion.h"
 #include "geometry_msgs/Vector3.h"
 #include "geometry_msgs/Twist.h"
+#include "std_msgs/Float64.h"
 
 
 using namespace std;
 
 Eigen::Vector2d m; // Position of the boat
-Eigen::Vector2d a={-40,30},b={40,25}, c={-38,-25}; // the ligne we want to follow
-double r=10, zeta=M_PI/4, urmax=M_PI/4;// rayon de couloir, l'angle de près, l'angle maximale du gouvernail
+Eigen::Vector2d SK={0,0}; // the ligne we want to follow
+double zeta=M_PI/4, urmax=M_PI/4, radius;// rayon de couloir, l'angle de près, l'angle maximale du gouvernail
 double theta=0, psi_w=0; // cap de la voile, l'angle du vent
 double q=0; 
 double q_hys=1;// valeur d'hystérésis
 double ur,us;
 double ks=1.0; // constante k pour regler l'angle de la sail
-double c_ligne=1.5*2/M_PI; // Constance pour rendre la ligne plus attractive
-tf::Quaternion q_sail={0,0,0,1}, q_wind={0,0,0,1};
+double Gamma=M_PI/6; // Constance pour rendre la ligne plus attractive
+tf::Quaternion q_sail, q_wind;
 bool initStateFinie=true;
 
 
@@ -48,15 +49,15 @@ double angle(Eigen::Vector2d x)
     return atan2(x[1],x[0]);
 }
 
-void controler_line(Eigen::Vector2d m, double theta, double psi_w, Eigen::Vector2d a, Eigen::Vector2d b, double& ur, double& us, double& q_hys)
+void controler_line(Eigen::Vector2d m, double theta, double psi_w, Eigen::Vector2d a, Eigen::Vector2d b, double& ur, double& us)
 {
-	Eigen::Vector2d diff=b-a;
-	double nor=norme(diff);
+	double r=2;
+	double nor=norme(b-a);
 	double e=((b-a)[0]*(m-a)[1]-(b-a)[1]*(m-a)[0])/nor;
 	double phi=angle(b-a);
 	double theta_bar;
-	theta_bar=phi-c_ligne*atan(e/r);
-	if (fabs(e)>r/2)
+	theta_bar=phi-2*Gamma*atan(e/r)/M_PI;
+	/*if (fabs(e)>r/2)
 	{
 		q_hys=sign(e);
 	}
@@ -64,7 +65,7 @@ void controler_line(Eigen::Vector2d m, double theta, double psi_w, Eigen::Vector
 	if ((cos(psi_w-theta_bar)+cos(zeta))<0 || (fabs(e)<r && ((cos(psi_w-phi)+cos(zeta))<0)))
 	{
 		theta_bar=M_PI+psi_w - q_hys*zeta;
-	}
+	}*/
 	
 	if (cos(theta-theta_bar)>=0)
 	{
@@ -105,12 +106,21 @@ int main(int argc, char **argv)
     ros::Subscriber pos_sail= n.subscribe("boat_pose", 1000, poseCallback);
     ros::Subscriber head_sail= n.subscribe("heading_boat", 1000, headCallback);
     ros::Subscriber wind= n.subscribe("wind_angle", 1000, windCallback);
-    ros::Publisher trian_pub = n.advertise<visualization_msgs::Marker>( "visualization_triangle",0 );
     ros::Publisher com_servo = n.advertise<geometry_msgs::Vector3>("actuators", 1000);
-    ros::Rate loop_rate(50);
+    ros::Publisher pointa = n.advertise<geometry_msgs::Point>("a_triangle", 1000);
+    ros::Publisher pointb = n.advertise<geometry_msgs::Point>("b_triangle", 1000);
+    ros::Publisher pointc = n.advertise<geometry_msgs::Point>("c_triangle", 1000);
+    ros::Publisher radius_r_pub = n.advertise<std_msgs::Float64>("radius_circle", 1000);
+    ros::Publisher radius_rc_pub = n.advertise<std_msgs::Float64>("radius_circle_cuic", 1000);
+    ros::Publisher pointsk = n.advertise<geometry_msgs::Point>("sk", 1000);
+
+    n.param<double>("radius_r", radius, 0);
+    ros::Rate loop_rate(300);
     double t0 = ros::Time::now().toSec();
     while(ros::ok()){
     	geometry_msgs::Vector3 msg;
+    	geometry_msgs::Point cA, cB, cC, cSK;
+    	std_msgs::Float64 rad_rc, rad_r;
     	visualization_msgs::Marker marker;
 
     	double roll,pitch;
@@ -120,25 +130,29 @@ int main(int argc, char **argv)
         //Initialisation of the state finite machine
         double  tf = ros::Time::now().toSec();
 
-        if (tf-t0<0.3)
+        if (tf-t0<0.5)
         {
         	ROS_INFO("Do anything");
         }
         //ros::Duration(1).sleep();
         else{
-	        ROS_INFO("mx=%f", m[0]);
-	        ROS_INFO("my=%f", m[1]);
+
+        	Eigen::Matrix2d Rot;
+			Rot << cos(psi_w), -sin(psi_w), 
+				sin(psi_w),cos(psi_w);
+
+			double R=radius/2; // this parameter can change
+
+			Eigen::Vector2d a_r1={R, 0}, b_r1={-R/2, R*sqrt(3)/2}, c_r1={-R/2, -R*sqrt(3)/2};
+
+			// In the global frame
+			Eigen::Vector2d a=Rot*a_r1+SK, c=Rot*c_r1+SK,b=Rot*b_r1+SK;
+
 	        if (initStateFinie==true)
 			{
-				Eigen::Vector2d diff1=m-a;
-				double d1=norme(diff1);
-				ROS_INFO("d1=%f", d1);
-				Eigen::Vector2d diff2=m-b;
-				double d2=norme(diff2);
-				ROS_INFO("d2=%f", d2);
-				Eigen::Vector2d diff3=m-c;
-				double d3=norme(diff3);
-				ROS_INFO("d3=%f", d3);
+				double d1=norme(m-a);
+				double d2=norme(m-b);
+				double d3=norme(m-c);
 				if (d1==min(min(d1,d2),d3))
 				{
 					q=0;
@@ -160,19 +174,19 @@ int main(int argc, char **argv)
 			}
 
 	        // State finite machine
-	        if ((q==0 && (b-a)[0]*(b-m)[0]+(b-a)[1]*(b-m)[1]<0) || (q==0 && norme(b-m)<norme(b-a)/5))
+	        if (q==0 && (b-a)[0]*(b-m)[0]+(b-a)[1]*(b-m)[1]<0)
 	    	{
 	    		ROS_INFO("State 1");
 	    		q=1;
 	    	}
 
-	    	if ((q==1 && (c-b)[0]*(c-m)[0]+(c-b)[1]*(c-m)[1]<0) || (q==1 && norme(c-m)<norme(c-b)/5))
+	    	if (q==1 && (c-b)[0]*(c-m)[0]+(c-b)[1]*(c-m)[1]<0)
 	    	{
 	    		ROS_INFO("State 2");
 	    		q=2;
 	    	}
 
-	    	if ((q==2 && (a-c)[0]*(a-m)[0]+(a-c)[1]*(a-m)[1]<0) || (q==2 && norme(a-m)<norme(a-c)/5))
+	    	if (q==2 && (a-c)[0]*(a-m)[0]+(a-c)[1]*(a-m)[1]<0)
 	    	{
 	    		ROS_INFO("State 0");
 	    		q=0;
@@ -180,112 +194,40 @@ int main(int argc, char **argv)
 
 
 	        if (q==0)
-	        	controler_line(m, theta, psi_w, a, b, ur, us,q_hys);
+	        	controler_line(m, theta, psi_w, a, b, ur, us);
 	        if (q==1)
-	        	controler_line(m, theta, psi_w, b, c, ur, us,q_hys);
+	        	controler_line(m, theta, psi_w, b, c, ur, us);
 	        if (q==2)
-	        	controler_line(m, theta, psi_w, c, a, ur, us,q_hys);
+	        	controler_line(m, theta, psi_w, c, a, ur, us);
 
-
-	    	//regulation and publication
 	    	
 	    	msg.x=ur;
 	    	msg.y=us;
 	    	msg.z=0;
 	    	com_servo.publish(msg);
 
-	    	//visualisation
-	    	for (int i=0; i<6; i++)
-	    	{
+	    	cA.x=a[0];
+	    	cA.y=a[1];
+	    	cA.z=0;
+	    	cSK.x=SK[0];
+	    	cSK.y=SK[1];
+	    	cSK.z=0;
+	    	cB.x=b[0];
+	    	cB.y=b[1];
+	    	cB.z=0;
+	    	cC.x=c[0];
+	    	cC.y=c[1];
+	    	cC.z=0;
+	    	rad_rc.data=R;
+	    	rad_r.data=radius;
 
-		    	marker.header.frame_id = "map";
-		        marker.header.stamp = ros::Time::now();
-		        marker.ns = "triangle";
-		        marker.id = i;
-		        marker.action = visualization_msgs::Marker::ADD;
-		        marker.scale.x = 1;
-		        marker.scale.y = 1;
-		        marker.scale.z = 1;
-		        marker.color.a = 1.0;
-		        marker.pose.position.z=0;
-		        marker.pose.orientation.x=0;
-		       	marker.pose.orientation.y=0;
-		       	marker.pose.orientation.z=0;
-		       	marker.pose.orientation.w=1;
-		       	tf::Quaternion q;
-		        if (i==0)
-		        {
-			        marker.type = visualization_msgs::Marker::SPHERE;
-			        marker.pose.position.x = a[0];
-			        marker.pose.position.y = a[1];
-			        marker.color.r = 1.0f;
-			        marker.color.g = 0.0f;
-			        marker.color.b = 0.0f;
-		    	}
+	    	pointa.publish(cA);
+	    	pointb.publish(cB);
+	    	pointc.publish(cC);
+	    	radius_rc_pub.publish(rad_rc);
+	    	radius_r_pub.publish(rad_r);
+	    	pointsk.publish(cSK);
 
-		    	if (i==1)
-		        {
-			        marker.type = visualization_msgs::Marker::SPHERE;
-			        marker.pose.position.x = b[0];
-			        marker.pose.position.y = b[1];
-			        marker.color.r = 0.0f;
-			        marker.color.g = 1.0f;
-			        marker.color.b = 0.0f;
-		    	}
-
-		    	if (i==2)
-		        {
-			        marker.type = visualization_msgs::Marker::SPHERE;
-			        marker.pose.position.x = c[0];
-			        marker.pose.position.y = c[1];
-			        marker.color.r = 0.0f;
-			        marker.color.g = 0.0f;
-			        marker.color.b = 1.0f;
-		    	}
-
-		    	if (i==3)
-		        {
-			        marker.type = visualization_msgs::Marker::ARROW;
-			        marker.scale.x = norme(b-a);
-			        marker.scale.z = 0.1;
-			        marker.pose.position.x = a[0];
-			        marker.pose.position.y = a[1];
-	        		q.setRPY(0, 0, angle(b-a));
-	        		tf::quaternionTFToMsg(q, marker.pose.orientation);
-			        marker.color.r = 0.0f;
-			        marker.color.g = 1.0f;
-			        marker.color.b = 1.0f;
-		    	}
-
-		    	if (i==4)
-		        {
-			        marker.type = visualization_msgs::Marker::ARROW;
-			        marker.scale.x = norme(c-b);
-			        marker.scale.z = 0.1;
-			        marker.pose.position.x = b[0];
-			        marker.pose.position.y = b[1];
-	        		q.setRPY(0, 0, angle(c-b));
-	        		tf::quaternionTFToMsg(q, marker.pose.orientation);
-			        marker.color.r = 1.0f;
-			        marker.color.g = 1.0f;
-			        marker.color.b = 0.0f;
-		    	}
-
-		    	if (i==5)
-		        {
-			        marker.type = visualization_msgs::Marker::ARROW;
-			        marker.scale.x = norme(c-a);
-			        marker.scale.z = 0.1;
-			        marker.pose.position.x = c[0];
-			        marker.pose.position.y = c[1];
-	        		q.setRPY(0, 0, angle(a-c));
-	        		tf::quaternionTFToMsg(q, marker.pose.orientation);
-			        marker.color.r = 1.0f;
-			        marker.color.g = 1.0f;
-			        marker.color.b = 1.0f;
-		    	}
-		        trian_pub.publish( marker );
-		    }
 		}
 	    ros::spinOnce();
         loop_rate.sleep();

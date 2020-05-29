@@ -45,8 +45,8 @@ int main(int argc, char **argv)
     ros::Publisher circle2_pub = n.advertise<visualization_msgs::Marker>( "visualization_circleSK2",0 );
     ros::Publisher cube_pub = n.advertise<visualization_msgs::Marker>( "visualization_cube",0 );
     ros::Publisher arrow_pub = n.advertise<visualization_msgs::Marker>( "visualization_arrow",0 );
-    ros::Subscriber sub_r= n.subscribe("radius", 1000, rCallback);
-    ros::Subscriber sub_sl= n.subscribe("sk_point", 1000, skCallback);
+    ros::Subscriber sub_r= n.subscribe("radius_r", 1000, rCallback);
+    ros::Subscriber sub_sl= n.subscribe("sk", 1000, skCallback);
     ros::Subscriber pos_sail= n.subscribe("boat_pose", 1000, poseCallback);
 
     ros::Rate loop_rate(100);
