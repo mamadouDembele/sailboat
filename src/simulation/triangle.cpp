@@ -25,7 +25,7 @@ double q=0;
 double q_hys=1;// valeur d'hystérésis
 double ur,us;
 double ks=1.0; // constante k pour regler l'angle de la sail
-double Gamma=M_PI/6; // Constance pour rendre la ligne plus attractive
+double Gamma=M_PI/4; // Constance pour rendre la ligne plus attractive
 tf::Quaternion q_sail, q_wind;
 bool initStateFinie=true;
 
@@ -57,7 +57,7 @@ void controler_line(Eigen::Vector2d m, double theta, double psi_w, Eigen::Vector
 	double phi=angle(b-a);
 	double theta_bar;
 	theta_bar=phi-2*Gamma*atan(e/r)/M_PI;
-	if (fabs(e)>r/2)
+	/*if (fabs(e)>r/2)
 	{
 		q_hys=sign(e);
 	}
@@ -66,7 +66,7 @@ void controler_line(Eigen::Vector2d m, double theta, double psi_w, Eigen::Vector
 	{
 		theta_bar=M_PI+psi_w - q_hys*zeta;
 	}
-	
+	*/
 	if (cos(theta-theta_bar)>=0)
 	{
 		ur=urmax*sin(theta-theta_bar);
@@ -115,7 +115,7 @@ int main(int argc, char **argv)
     ros::Publisher pointsk = n.advertise<geometry_msgs::Point>("sk", 1000);
 
     n.param<double>("radius_r", radius, 0);
-    ros::Rate loop_rate(50);
+    ros::Rate loop_rate(100);
     double t0 = ros::Time::now().toSec();
     while(ros::ok()){
     	geometry_msgs::Vector3 msg;
@@ -151,8 +151,11 @@ int main(int argc, char **argv)
 	        if (initStateFinie==true)
 			{
 				double d1=norme(m-a);
+				ROS_INFO("d1=%f", d1);
 				double d2=norme(m-b);
+				ROS_INFO("d2=%f", d2);
 				double d3=norme(m-c);
+				ROS_INFO("d3=%f", d3);
 				if (d1==min(min(d1,d2),d3))
 				{
 					q=0;
@@ -174,19 +177,19 @@ int main(int argc, char **argv)
 			}
 
 	        // State finite machine
-	        if ((q==0 && (b-a)[0]*(b-m)[0]+(b-a)[1]*(b-m)[1]<0) || (norme(m-b)<norme(a-b)/4))
+	        if ((q==0 && (b-a)[0]*(b-m)[0]+(b-a)[1]*(b-m)[1]<0) || (q==0 && norme(m-b)<norme(a-b)/20))
 	    	{
 	    		ROS_INFO("State 1");
 	    		q=1;
 	    	}
 
-	    	if ((q==1 && (c-b)[0]*(c-m)[0]+(c-b)[1]*(c-m)[1]<0) || (norme(m-c)<norme(c-b)/4))
+	    	if ((q==1 && (c-b)[0]*(c-m)[0]+(c-b)[1]*(c-m)[1]<0) || (q==1 && norme(m-c)<norme(c-b)/20))
 	    	{
 	    		ROS_INFO("State 2");
 	    		q=2;
 	    	}
 
-	    	if ((q==2 && (a-c)[0]*(a-m)[0]+(a-c)[1]*(a-m)[1]<0) || (norme(m-a)<norme(c-a)/4))
+	    	if ((q==2 && (a-c)[0]*(a-m)[0]+(a-c)[1]*(a-m)[1]<0) || (q==2 && norme(m-a)<norme(c-a)/20))
 	    	{
 	    		ROS_INFO("State 0");
 	    		q=0;
