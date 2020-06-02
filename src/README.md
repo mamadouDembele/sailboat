@@ -9,7 +9,7 @@ paper on sailboat: *A simple controller for line following of sailboats*.
 
 A simulation on ROS and the use of the rviz tool allows us to visualize the figures below.
 
-![](suivi_ligne.png "The boat follows the line AB shown in blue. The red lines represent the strip to never leave") ![](cap_au_pres.png "In this figure, we can see the boat going upwind. It performs a series of tacks called beating")
+![50% center](suivi_ligne.png "The boat follows the line AB shown in blue. The red lines represent the strip to never leave") ![](cap_au_pres.png "In this figure, we can see the boat going upwind. It performs a series of tacks called beating")
 
  **Getting Started**
 
