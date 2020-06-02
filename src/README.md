@@ -1,4 +1,4 @@
- <h1>**Package simulation**</h1>
+ <h1>Package simulation</h1>
 
 The simulation folder consists of several .cpp files describing algorithms.
 
@@ -23,8 +23,7 @@ The idea of the first algorithm is to make the boat do a cycloid. This cycloid w
 
 The next 3 figures show the boat performing the holding mission with different wind speed values. The purpose of these figures is to justify the robustness of the control law.
 
-<img src="figure/stat_figure_1.png" alt="stat_figure_1" style="display:inline-block;" width="300" height="340"/>
- <img src="figure/stat_keeping_2.png" alt="stat_k_2" style="display:inline-block;" width="300" height="340"/> <img src="figure/stat_keeping_3.png" alt="stat_figure_1" style="display:inline-block;" width="300" height="340"/>
+<img src="figure/stat_figure_1.png" alt="stat_figure_1" style="display:inline-block;" width="300" height="340"/> <img src="figure/stat_keeping_2.png" alt="stat_k_2" style="display:inline-block;" width="300" height="340"/> <img src="figure/stat_keeping_3.png" alt="stat_figure_1" style="display:inline-block;" width="300" height="340"/>
  
  <h3>From left to right, we observe the station keeping challenge for the different speed values v=1, v=3, v=5</h3>
 
