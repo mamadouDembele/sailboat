@@ -106,7 +106,7 @@ int main(int argc, char **argv)
 	        marker.action = visualization_msgs::Marker::ADD;
 	        marker.type = visualization_msgs::Marker::ARROW;
 	        marker.scale.x = norme(d-b);
-	        marker.scale.y = 1.0;
+	        marker.scale.y = 0.3;
 	        marker.scale.z = 0.1;
 	        marker.color.a = 1.0;
 	        marker.pose.position.x = b[0];
@@ -127,7 +127,7 @@ int main(int argc, char **argv)
 	        marker2.action = visualization_msgs::Marker::ADD;
 	        marker2.type = visualization_msgs::Marker::ARROW;
 	        marker2.scale.x = norme(a-c);
-	        marker2.scale.y = 1.0;
+	        marker2.scale.y = 0.3;
 	        marker2.scale.z = 0.1;
 	        marker2.color.a = 1.0;
 	        marker2.pose.position.x = c[0];
@@ -148,7 +148,7 @@ int main(int argc, char **argv)
 	        points.action = visualization_msgs::Marker::ADD; 
 	        points.type = visualization_msgs::Marker::LINE_STRIP;
 	        points.pose.orientation.w=1;
-	        points.scale.x = 0.2;
+	        points.scale.x = 0.1;
 	    	//points.scale.y = 0.2;
 	    	points.color.a = 1.0;
 	        points.color.r = 1.0f;
@@ -174,7 +174,7 @@ int main(int argc, char **argv)
 	        points1.action = visualization_msgs::Marker::ADD; 
 	        points1.type = visualization_msgs::Marker::LINE_STRIP;
 	        points1.pose.orientation.w=1;
-	        points1.scale.x = 0.2;
+	        points1.scale.x = 0.1;
 	    	//points.scale.y = 0.2;
 	    	points1.color.a = 1.0;
 	        points1.color.r = 1.0f;
@@ -200,7 +200,7 @@ int main(int argc, char **argv)
 	        points2.action = visualization_msgs::Marker::ADD; 
 	        points2.type = visualization_msgs::Marker::LINE_STRIP;
 	        points2.pose.orientation.w=1;
-	        points2.scale.x = 0.2;
+	        points2.scale.x = 0.1;
 	    	//points.scale.y = 0.2;
 	    	points2.color.a = 1.0;
 	        points2.color.r = 1.0f;

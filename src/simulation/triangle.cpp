@@ -49,15 +49,15 @@ double angle(Eigen::Vector2d x)
     return atan2(x[1],x[0]);
 }
 
-void controler_line(Eigen::Vector2d m, double theta, double psi_w, Eigen::Vector2d a, Eigen::Vector2d b, double& ur, double& us)
+void controler_line(Eigen::Vector2d m, double theta, double psi_w, Eigen::Vector2d a, Eigen::Vector2d b, double& ur, double& us, double& q_hys)
 {
-	double r=2;
+	double r=5;
 	double nor=norme(b-a);
 	double e=((b-a)[0]*(m-a)[1]-(b-a)[1]*(m-a)[0])/nor;
 	double phi=angle(b-a);
 	double theta_bar;
 	theta_bar=phi-2*Gamma*atan(e/r)/M_PI;
-	/*if (fabs(e)>r/2)
+	if (fabs(e)>r/2)
 	{
 		q_hys=sign(e);
 	}
@@ -65,7 +65,7 @@ void controler_line(Eigen::Vector2d m, double theta, double psi_w, Eigen::Vector
 	if ((cos(psi_w-theta_bar)+cos(zeta))<0 || (fabs(e)<r && ((cos(psi_w-phi)+cos(zeta))<0)))
 	{
 		theta_bar=M_PI+psi_w - q_hys*zeta;
-	}*/
+	}
 	
 	if (cos(theta-theta_bar)>=0)
 	{
@@ -115,7 +115,7 @@ int main(int argc, char **argv)
     ros::Publisher pointsk = n.advertise<geometry_msgs::Point>("sk", 1000);
 
     n.param<double>("radius_r", radius, 0);
-    ros::Rate loop_rate(300);
+    ros::Rate loop_rate(50);
     double t0 = ros::Time::now().toSec();
     while(ros::ok()){
     	geometry_msgs::Vector3 msg;
@@ -174,19 +174,19 @@ int main(int argc, char **argv)
 			}
 
 	        // State finite machine
-	        if (q==0 && (b-a)[0]*(b-m)[0]+(b-a)[1]*(b-m)[1]<0)
+	        if ((q==0 && (b-a)[0]*(b-m)[0]+(b-a)[1]*(b-m)[1]<0) || (norme(m-b)<norme(a-b)/4))
 	    	{
 	    		ROS_INFO("State 1");
 	    		q=1;
 	    	}
 
-	    	if (q==1 && (c-b)[0]*(c-m)[0]+(c-b)[1]*(c-m)[1]<0)
+	    	if ((q==1 && (c-b)[0]*(c-m)[0]+(c-b)[1]*(c-m)[1]<0) || (norme(m-c)<norme(c-b)/4))
 	    	{
 	    		ROS_INFO("State 2");
 	    		q=2;
 	    	}
 
-	    	if (q==2 && (a-c)[0]*(a-m)[0]+(a-c)[1]*(a-m)[1]<0)
+	    	if ((q==2 && (a-c)[0]*(a-m)[0]+(a-c)[1]*(a-m)[1]<0) || (norme(m-a)<norme(c-a)/4))
 	    	{
 	    		ROS_INFO("State 0");
 	    		q=0;
@@ -194,11 +194,11 @@ int main(int argc, char **argv)
 
 
 	        if (q==0)
-	        	controler_line(m, theta, psi_w, a, b, ur, us);
+	        	controler_line(m, theta, psi_w, a, b, ur, us, q_hys);
 	        if (q==1)
-	        	controler_line(m, theta, psi_w, b, c, ur, us);
+	        	controler_line(m, theta, psi_w, b, c, ur, us, q_hys);
 	        if (q==2)
-	        	controler_line(m, theta, psi_w, c, a, ur, us);
+	        	controler_line(m, theta, psi_w, c, a, ur, us, q_hys);
 
 	    	
 	    	msg.x=ur;

@@ -60,13 +60,24 @@ void publication_float(std_msgs::Float64& msg, double a)
 
 //----------controller-------------------//
 
-void controler_line(Eigen::Vector2d m, double theta, double psi_w, Eigen::Vector2d a, Eigen::Vector2d b, double& ur, double& us)
+void controler_line(Eigen::Vector2d m, double theta, double psi_w, Eigen::Vector2d a, Eigen::Vector2d b, double& ur, double& us, double& q_h)
 {
+	double r=2;
 	double nor=norme(b-a);
 	double e=((b-a)[0]*(m-a)[1]-(b-a)[1]*(m-a)[0])/nor;
 	double phi=angle(b-a);
 	double theta_bar;
-	theta_bar=phi-2*Gamma*atan(e/2)/M_PI;
+	theta_bar=phi-2*Gamma*atan(e/r)/M_PI;
+
+	if (fabs(e)>r/2)
+	{
+		q_h=sign(e);
+	}
+
+	if ((cos(psi_w-theta_bar)+cos(zeta))<0 || (fabs(e)<r && ((cos(psi_w-phi)+cos(zeta))<0)))
+	{
+		theta_bar=M_PI+psi_w - q_h*zeta;
+	}
 	
 	if (cos(theta-theta_bar)>=0)
 	{
@@ -152,10 +163,10 @@ int main(int argc, char **argv)
 		R << cos(psi_w), -sin(psi_w), 
 			sin(psi_w),cos(psi_w);
 
-		double l=r/3, L=r/3; // this parameter can change
+		double l=r/3; // this parameter can change
 
-		Eigen::Vector2d a_r1={-l, -L/2},b_r1={l, -L/3-l*tan(M_PI/3)};
-		Eigen::Vector2d c_r1={l, L/2},d_r1={-l, L/3+l*tan(M_PI/3)};
+		Eigen::Vector2d a_r1={-l, -l}, b_r1={l, -l};
+		Eigen::Vector2d c_r1={l, l}, d_r1={-l, l};
 
 		// In the global frame
 		Eigen::Vector2d a=R*a_r1+SK,d=R*d_r1+SK;
@@ -230,13 +241,13 @@ int main(int argc, char **argv)
 	    	}
 
 	    	if (q==0)
-	    		controler_line(m, theta, psi_w, d, a, ur, us);
+	    		controler_line(m, theta, psi_w, d, a, ur, us, q_h);
 	    	if (q==1)
-	    		controler_line(m, theta, psi_w, a, b, ur, us);
+	    		controler_line(m, theta, psi_w, a, b, ur, us, q_h);
 	    	if (q==2)
-	    		controler_line(m, theta, psi_w, b, c, ur, us);
+	    		controler_line(m, theta, psi_w, b, c, ur, us, q_h);
 	    	if (q==3)
-	    		controler_line(m, theta, psi_w, c, d, ur, us);
+	    		controler_line(m, theta, psi_w, c, d, ur, us, q_h);
 
 	    	
 			//-------publication of the command-------//

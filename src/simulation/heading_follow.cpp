@@ -50,7 +50,7 @@ int main(int argc, char **argv)
     ros::Publisher com_servo = n.advertise<geometry_msgs::Vector3>("actuators", 1000);
 
     n.param<double>("thetabar", theta_bar, 0);
-    ros::Rate loop_rate(300);
+    ros::Rate loop_rate(50);
     double t0 = ros::Time::now().toSec();
     while(ros::ok()){
     	geometry_msgs::Vector3 msg;

@@ -119,7 +119,7 @@ int main(int argc, char **argv)
     n.param<double>("a_y", a[1], 0);
     n.param<double>("b_y", b[1], 0);
     n.param<double>("radius", r, 0);
-    ros::Rate loop_rate(300);
+    ros::Rate loop_rate(50);
     double t0 = ros::Time::now().toSec();
     while(ros::ok()){
     	geometry_msgs::Vector3 msg;
@@ -165,9 +165,9 @@ int main(int argc, char **argv)
 	       	marker_A.pose.orientation.y=0;
 	       	marker_A.pose.orientation.z=0;
 	       	marker_A.pose.orientation.w=1;
-	        marker_A.scale.x = 1;
-	    	marker_A.scale.y = 1;
-	    	marker_A.scale.z = 1;
+	        marker_A.scale.x = 0.5;
+	    	marker_A.scale.y = 0.5;
+	    	marker_A.scale.z = 0.5;
 	    	marker_A.color.a = 1.0;
 	        marker_A.color.r = 1.0f;
 	        marker_A.color.g = 1.0f;
@@ -188,9 +188,9 @@ int main(int argc, char **argv)
 	       	marker_B.pose.orientation.y=0;
 	       	marker_B.pose.orientation.z=0;
 	       	marker_B.pose.orientation.w=1;
-	        marker_B.scale.x = 1;
-	    	marker_B.scale.y = 1;
-	    	marker_B.scale.z = 1;
+	        marker_B.scale.x = 0.5;
+	    	marker_B.scale.y = 0.5;
+	    	marker_B.scale.z = 0.5;
 	    	marker_B.color.a = 1.0; 
 	        marker_B.color.r = 1.0f;
 	        marker_B.color.g = 0.0f;
@@ -204,7 +204,7 @@ int main(int argc, char **argv)
 	        marker_line.id = 0;
 	        marker_line.action = visualization_msgs::Marker::ADD;
 	        marker_line.type = visualization_msgs::Marker::LINE_STRIP;
-	        marker_line.scale.x = 0.5;
+	        marker_line.scale.x = 0.1;
 	        geometry_msgs::Point cA;
 	        geometry_msgs::Point cB;
 
@@ -249,7 +249,7 @@ int main(int argc, char **argv)
 	        marker_lineLeft.id = 0;
 	        marker_lineLeft.action = visualization_msgs::Marker::ADD;
 	        marker_lineLeft.type = visualization_msgs::Marker::LINE_STRIP;
-	        marker_lineLeft.scale.x = 0.2;
+	        marker_lineLeft.scale.x = 0.1;
 	        
 	        if (a[0]==b[0])
 	        {
@@ -296,7 +296,7 @@ int main(int argc, char **argv)
 	        marker_lineRight.id = 0;
 	        marker_lineRight.action = visualization_msgs::Marker::ADD;
 	        marker_lineRight.type = visualization_msgs::Marker::LINE_STRIP;
-	        marker_lineRight.scale.x = 0.2;
+	        marker_lineRight.scale.x = 0.1;
 	        
 	        if (a[0]==b[0])
 	        {

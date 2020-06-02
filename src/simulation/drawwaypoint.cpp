@@ -61,9 +61,9 @@ int main(int argc, char **argv)
             marker_B.pose.orientation.y=0;
             marker_B.pose.orientation.z=0;
             marker_B.pose.orientation.w=1;
-            marker_B.scale.x = 0.5;
-            marker_B.scale.y = 0.5;
-            marker_B.scale.z = 0.5;
+            marker_B.scale.x = 0.18;
+            marker_B.scale.y = 0.18;
+            marker_B.scale.z = 0.18;
             marker_B.color.a = 1.0; 
             marker_B.color.r = 1.0f;
             marker_B.color.g = 1.0f;

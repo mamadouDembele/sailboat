@@ -23,7 +23,7 @@ double dt=0.01;// dt is the simulation step
 double ur=0,us=0; //the input of the sailboat
 double a=2; // velocity of the "true" wind
 double psi_w; //the angle of the "true" wind
-double delta_s;
+double delta_s=0;
 //p1=0.125; p2=29.99; p3=96.43; p4=58.07; p5=120.65; p6=0.1; p7=0; p8=0.5; p9=10; p10=29.87; p11=0; % Plymouth
 //p1=0.03; p2=40; p3=6000; p4=200; p5=1500; p6=0.5; p7=0.5; p8=2; p9=300; p10=400; p11=0.2; % Aland
 double p1=0.05, p2=0.2, p3=6000, p4=1000, p5=2000, p6=1, p7=1, p8=2, p9=300, p10=10000, p11=1; // Vamos
@@ -92,9 +92,6 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "node_simulation");
     ros::NodeHandle n;
     ros::Publisher pose_state = n.advertise<geometry_msgs::Point>("boat_pose", 1000);
-    ros::Publisher twist_state = n.advertise<geometry_msgs::Twist>("boat_twist", 1000);
-    ros::Publisher speed_wind = n.advertise<std_msgs::Float64>("speed_truewind", 1000);
-    ros::Publisher speed_boat = n.advertise<std_msgs::Float64>("speed_boat", 1000);
     ros::Publisher wind = n.advertise<geometry_msgs::Quaternion>("wind_angle", 1000);
     ros::Publisher cap = n.advertise<geometry_msgs::Quaternion>("heading_boat", 1000);
     ros::Publisher boat_pub = n.advertise<visualization_msgs::Marker>( "visualization_boat",0 );
@@ -104,9 +101,7 @@ int main(int argc, char **argv)
     //ros::Publisher pose_boat_pub = n.advertise<visualization_msgs::Marker>( "visualization_pos_boat",0 );
     ros::Subscriber commande = n.subscribe("actuators", 1000, commCallback);
 
-    std_msgs::Float64 msg_speed_wind, msg_speed_boat;
     geometry_msgs::Point msg_pose;
-    geometry_msgs::Twist msg_twist;
     geometry_msgs::Quaternion msg_wind;
     geometry_msgs::Quaternion msg_cap;
 
@@ -143,12 +138,11 @@ int main(int argc, char **argv)
     n.param<double>("boat_x", x[0], 0);
     n.param<double>("boat_y", x[1], 0);
     n.param<double>("boat_head", x[2], 0);
-    ros::Rate loop_rate(300);
+    ros::Rate loop_rate(50);
     while (ros::ok()) {
         
 
         //ROS_INFO("psi_w=%f", psi_w);
-        //ROS_INFO("boat_x=%f", x[0]);
         //ROS_INFO("boat_head=%f", x[2]);
         // Publication of the wind angle
         tf::Quaternion q_wind;
@@ -158,15 +152,12 @@ int main(int argc, char **argv)
 
         // Publication of the position
         f(ur,us,x,xdot,psi_w, delta_s);
+        //ROS_INFO("boat_x=%f", x[0]);
         Euler_integration(x,xdot);
-        ROS_INFO("delta_s=%f", delta_s);
-        msg_speed_boat.data=x[3];
-        msg_speed_wind.data=a;
+        //ROS_INFO("delta_s=%f", delta_s);
         msg_pose.x=x[0];
         msg_pose.y=x[1];
         msg_pose.z=0;
-        speed_boat.publish(msg_speed_boat);
-        speed_wind.publish(msg_speed_wind);
         pose_state.publish(msg_pose);
 
         //Publication of the angle of the boat
@@ -175,15 +166,6 @@ int main(int argc, char **argv)
         tf::quaternionTFToMsg(q_cap, msg_cap);
         //ROS_INFO("Quaternion: x=%f,y=%f,z=%f,w=%f",msg_cap.x,msg_cap.y,msg_cap.z,msg_cap.w);
         cap.publish(msg_cap);
-
-        //Publication of the velocity
-        msg_twist.linear.x=x[3];
-        msg_twist.linear.y=0;
-        msg_twist.linear.z=0;
-        msg_twist.angular.x=x[4];
-        msg_twist.angular.y=0;
-        msg_twist.angular.z=0;
-        twist_state.publish(msg_twist);
 
         tf::Quaternion q;
         q.setRPY(0, 0, x[2]);
@@ -195,9 +177,9 @@ int main(int argc, char **argv)
         br_boat.sendTransform(transformStamped_boat);
         //visualisation of the boat
         q.setRPY(M_PI/2, 0, M_PI/2);
-        msgs_boat.pose.position.x=-4.5;
-        msgs_boat.pose.position.y=-2.4;
-        msgs_boat.pose.position.z=-2.5;
+        msgs_boat.pose.position.x=-1.0;
+        msgs_boat.pose.position.y=-0.5;
+        msgs_boat.pose.position.z=-0.5;
         tf::quaternionTFToMsg(q, msgs_boat.pose.orientation);
         marker_boat.header.frame_id = "boat";
         marker_boat.header.stamp = ros::Time::now();
@@ -206,9 +188,9 @@ int main(int argc, char **argv)
         marker_boat.type = visualization_msgs::Marker::MESH_RESOURCE;
         marker_boat.action = visualization_msgs::Marker::ADD;
         marker_boat.pose =msgs_boat.pose;
-        marker_boat.scale.x = 0.002;
-        marker_boat.scale.y = 0.002;
-        marker_boat.scale.z = 0.002;
+        marker_boat.scale.x = 0.0004;
+        marker_boat.scale.y = 0.0004;
+        marker_boat.scale.z = 0.0004;
         marker_boat.color.a = 1.0;
         marker_boat.color.r = 1.0;
         marker_boat.color.g = 1.0;
@@ -219,14 +201,14 @@ int main(int argc, char **argv)
         tf::Quaternion q_sail;
         q_sail.setRPY(0, 0, delta_s);
         transformStamped_sail.header.stamp = ros::Time::now();
-        transformStamped_sail.transform.translation.x =1.8;
-        transformStamped_sail.transform.translation.y = 0.0;//-0.2;
-        transformStamped_sail.transform.translation.z = 2.5;
+        transformStamped_sail.transform.translation.x =0.35;//2.43;
+        transformStamped_sail.transform.translation.y = 0.0;
+        transformStamped_sail.transform.translation.z = 0.35;
         tf::quaternionTFToMsg(q_sail,transformStamped_sail.transform.rotation);
         br_sail.sendTransform(transformStamped_sail);
 
         //visualisation of the sail
-        msgs_sail.pose.position.x=-3.4;
+        msgs_sail.pose.position.x=-1.15;
         msgs_sail.pose.position.y=0;
         msgs_sail.pose.position.z=0;
         q.setRPY(M_PI/2, 0, M_PI/2);
@@ -238,9 +220,9 @@ int main(int argc, char **argv)
         marker_sail.type = visualization_msgs::Marker::MESH_RESOURCE;
         marker_sail.action = visualization_msgs::Marker::ADD;
         marker_sail.pose =msgs_sail.pose;
-        marker_sail.scale.x = 0.002;
-        marker_sail.scale.y = 0.0016;
-        marker_sail.scale.z = 0.0012;
+        marker_sail.scale.x = 0.0005;
+        marker_sail.scale.y = 0.0004;
+        marker_sail.scale.z = 0.00038;
         marker_sail.color.a = 5.0;
         marker_sail.color.r = 0.0;
         marker_sail.color.g = 1.0;
@@ -249,16 +231,16 @@ int main(int argc, char **argv)
 
         
         transformStamped_rudder.header.stamp = ros::Time::now();
-        transformStamped_rudder.transform.translation.x =-4.4;
+        transformStamped_rudder.transform.translation.x =-0.7;
         transformStamped_rudder.transform.translation.y = 0.0;
-        transformStamped_rudder.transform.translation.z = 1-0.5;
+        transformStamped_rudder.transform.translation.z = 0;
         q.setRPY(0, 0, ur);
         tf::quaternionTFToMsg(q,transformStamped_rudder.transform.rotation);
         br_rudder.sendTransform(transformStamped_rudder);
         //visualisation of the rudder
-        msgs_rudder.pose.position.x=-0.65;
+        msgs_rudder.pose.position.x=-0.5;
         msgs_rudder.pose.position.y=0;
-        msgs_rudder.pose.position.z=-1.4;
+        msgs_rudder.pose.position.z=-0.3;
         q.setRPY(M_PI/2, 0, M_PI/2);
         tf::quaternionTFToMsg(q, msgs_rudder.pose.orientation);
         marker_rudder.header.frame_id = "rudder";
@@ -268,9 +250,9 @@ int main(int argc, char **argv)
         marker_rudder.type = visualization_msgs::Marker::MESH_RESOURCE;
         marker_rudder.action = visualization_msgs::Marker::ADD;
         marker_rudder.pose =msgs_rudder.pose;
-        marker_rudder.scale.x = 0.001;
-        marker_rudder.scale.y = 0.0015;
-        marker_rudder.scale.z = 0.0015;
+        marker_rudder.scale.x = 0.0007;
+        marker_rudder.scale.y = 0.0004;
+        marker_rudder.scale.z = 0.0004;
         marker_rudder.color.a = 20.0;
         marker_rudder.color.r = 1.0;
         marker_rudder.color.g = 1.0;
@@ -285,11 +267,11 @@ int main(int argc, char **argv)
         marker_wind.type = visualization_msgs::Marker::ARROW;
         marker_wind.action = visualization_msgs::Marker::ADD;
         marker_wind.pose.position.z=0;
-        marker_wind.scale.y = 1.0;
-        marker_wind.scale.z = 1.0;
+        marker_wind.scale.y = 0.5;
+        marker_wind.scale.z = 0.5;
         marker_wind.color.a = 1.5;
-        marker_wind.pose.position.x = x[0] + 10*cos(x[2]);//10*cos(psi_w);
-        marker_wind.pose.position.y = x[1] + 10*sin(x[2]);//10*sin(psi_w);
+        marker_wind.pose.position.x = -25;
+        marker_wind.pose.position.y = 3;
         tf::quaternionTFToMsg(q_wind, marker_wind.pose.orientation);
         marker_wind.scale.x = 4.0;
         marker_wind.color.r = 1.0f;
