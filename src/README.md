@@ -28,8 +28,18 @@ The next 3 figures show the boat performing the holding mission with different w
 <img src="figure/stat_figure_1.png" alt="stat_figure_1" style="display:inline-block;" width="300" height="340"/> <img src="figure/stat_keeping_2.png" alt="stat_k_2" style="display:inline-block;" width="300" height="340"/> <img src="figure/stat_keeping_3.png" alt="stat_figure_1" style="display:inline-block;" width="300" height="340"/>
  
  <h3>From left to right, we observe the station keeping challenge for the different speed values v=1, v=3, v=5</h3>
+ 
+ 
+<h2>Station keeping algoritm and avoidance</h2>
+
+For this situation two algorithms have been developed. The first one consists in making a triangle around a physical buoy while remaining a circle of well defined radius. As in the previous case, I varied the wind speed to test the efficiency of the algorithm.The figures below show these limits from a slightly high wind speed.
+
+<img src="figure/triangle1.png" alt="triangle1" style="display:inline-block;" width="300" height="340"/> <img src="figure/triangle2.png" alt="triangle2" style="display:inline-block;" width="300" height="340"/> <img src="figure/triangle3.png" alt="triangle3" style="display:inline-block;" width="300" height="340"/>
 
 
 
+<h3>On the figures, the red arrow indicates the direction of the wind, the small white dots indicate the trajectory of the boat after several turns, The big dot in the middle is the physical buoy. </h3>
 
+The second algorithm is that the boat can make a square. For this same problem the results are rather satisfactory than the first one. The boat manages to stay in the circle with the different speed values.
 
+<img src="figure/quadri1.png" alt="quadri1" style="display:inline-block;" width="300" height="340"/> <img src="figure/quadri2.png" alt="quadri2" style="display:inline-block;" width="300" height="340"/> <img src="figure/quadri3.png" alt="quadri3" style="display:inline-block;" width="300" height="340"/>
