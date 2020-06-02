@@ -21,6 +21,15 @@ Use this package
 3. Finally type ***echo "source ~/workspaceRos/devel/setup.bash" >> ~/.bashrc***
 You now have the package installed in ***workspaceRos/src/sailboat***.
 
+Authors
+-------
+<h3>MAMADOU DEMBELE</h3>
+
+License
+-------
+
+This project is licensed under the GNU General Public License v3.0.
+
 
 
 
