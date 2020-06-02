@@ -9,7 +9,7 @@ paper on sailboat: *A simple controller for line following of sailboats*.
 
 A simulation on ROS and the use of the rviz tool allows us to visualize the figures below.
 
-<img src="suivi_ligne.png" alt="suivi_ligne" style="display:inline-block;" width="250" height="140"/> <img src="cap_au_pres.png" alt="suivi_ligne" style="display:inline-block;" width="250" height="140"/>
+<img src="suivi_ligne.png" alt="suivi_ligne" style="display:inline-block;" width="550" height="340"/> <img src="cap_au_pres.png" alt="suivi_ligne" style="display:inline-block;" width="550" height="340"/>
 
 
  **Getting Started**
