@@ -21,7 +21,7 @@ using namespace std;
 
 double dt=0.01;// dt is the simulation step 
 double ur=0,us=0; //the input of the sailboat
-double a=2; // velocity of the "true" wind
+double a=5; // velocity of the "true" wind
 double psi_w; //the angle of the "true" wind
 double delta_s=0;
 //p1=0.125; p2=29.99; p3=96.43; p4=58.07; p5=120.65; p6=0.1; p7=0; p8=0.5; p9=10; p10=29.87; p11=0; % Plymouth
@@ -138,7 +138,7 @@ int main(int argc, char **argv)
     n.param<double>("boat_x", x[0], 0);
     n.param<double>("boat_y", x[1], 0);
     n.param<double>("boat_head", x[2], 0);
-    ros::Rate loop_rate(50);
+    ros::Rate loop_rate(100);
     while (ros::ok()) {
         
 
@@ -270,10 +270,10 @@ int main(int argc, char **argv)
         marker_wind.scale.y = 0.5;
         marker_wind.scale.z = 0.5;
         marker_wind.color.a = 1.5;
-        marker_wind.pose.position.x = -25;
-        marker_wind.pose.position.y = 3;
+        marker_wind.pose.position.x = 35;
+        marker_wind.pose.position.y = -10;
         tf::quaternionTFToMsg(q_wind, marker_wind.pose.orientation);
-        marker_wind.scale.x = 4.0;
+        marker_wind.scale.x = 5.0;
         marker_wind.color.r = 1.0f;
         marker_wind.color.g = 0.0f;
         marker_wind.color.b = 0.0f;
