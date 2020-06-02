@@ -11,8 +11,7 @@ A simulation on ROS and the use of the rviz tool allows us to visualize the figu
 
 <img src="suivi_ligne.png" alt="suivi_ligne" style="display:inline-block;" width="450" height="340"/> <img src="cap_au_pres.png" alt="suivi_ligne" style="display:inline-block;" width="450" height="340"/>
 
-a.  ***The boat follows the line AB shown in blue. The red lines represent the strip to never leave***
-b. ***In this figure, we can see the boat going upwind. It performs a series of tacks called beating***
+(a)  ***The boat follows the line AB shown in blue. The red lines represent the strip to never leave***. (b) ***In this figure, we can see the boat going upwind. It performs a series of tacks called beating***
 
 
  **Getting Started**
