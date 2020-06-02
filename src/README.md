@@ -19,7 +19,7 @@ A simulation on ROS and the use of the rviz tool allows us to visualize the figu
 Retention consists of sailing the boat around a certain area. An area represented by a circle. Many algorithms have been implemented to solve this problem. 
 The idea of the first algorithm is to make the boat do a cycloid. This cycloid will be composed of two circles connected by two straight lines. To make the boat follow a circle, a vector field has been used. The figure below shows the shape of the cycloid and the vector field.
 
-<P style="text-align:center"><img src="figure/sk_figure.png" alt="sk_figure"  width="550" height="340"></P>
+<img src="figure/sk_figure.png" alt="sk_figure"  width="550" height="340"/>
 
 The next 3 figures show the boat performing the holding mission with different wind speed values. The purpose of these figures is to justify the robustness of the control law.
 
