@@ -24,6 +24,8 @@ The idea of the first algorithm is to make the boat do a cycloid. This cycloid w
 <div id="centre">
 <div align="center"><img src="figure/sk_figure.png" alt="sk_figure"  width="550" height="340" /></div>
 
+-------------------
+
 The next 3 figures show the boat performing the holding mission with different wind speed values. The purpose of these figures is to justify the robustness of the control law.
 
 <img src="figure/stat_figure_1.png" alt="stat_figure_1" style="display:inline-block;" width="300" height="340"/> <img src="figure/stat_keeping_2.png" alt="stat_k_2" style="display:inline-block;" width="300" height="340"/> <img src="figure/stat_keeping_3.png" alt="stat_figure_1" style="display:inline-block;" width="300" height="340"/>
@@ -41,7 +43,7 @@ For this situation two algorithms have been developed. The first one consists in
 
 
 <h3>On the figures, the red arrow indicates the direction of the wind, the small white dots indicate the trajectory of the boat after several turns, The big dot in the middle is the physical buoy. </h3>
-
+------------------------------
 The second algorithm is that the boat can make a square. For this same problem the results are rather satisfactory than the first one. The boat manages to stay in the circle with the different speed values.
 
 <img src="figure/quadri1.png" alt="quadri1" style="display:inline-block;" width="300" height="340"/> <img src="figure/quadri2.png" alt="quadri2" style="display:inline-block;" width="300" height="340"/> <img src="figure/quadri3.png" alt="quadri3" style="display:inline-block;" width="300" height="340"/>
@@ -49,7 +51,7 @@ The second algorithm is that the boat can make a square. For this same problem t
 <div id="centre">
 <div align="center"><h3>station keeping for different value of the speed</h3></div>
 
-
+--------------------------------
 <h1>Package mission</h1>
 The other main objective of the internship is to be able to use previously developed algorithms in order to be able to carry out certain missions. These missions are challenges of the WRSC competition (World Robotic Sailing Championships).
 
