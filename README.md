@@ -3,7 +3,7 @@ Autonomous-Sailboat
 
 My internship deals with this problem of controlling sailboat robots, which I am working on with the University of Plymouth. The first part of this internship consists of making a numerical simulation on a computer. The ROS middleware and its graphical visualization tool were used to perform this simulation. The developed code was written in C++.
 
-##Prerequisites
+## Prerequisites
 
 You need Ubuntu Linux (18.04 or 16.04 for example) and ROS melodic installed on your computer.
 To install ROS, follow the instructions on the official ROS website http://wiki.ros.org/melodic/Installation/Ubuntu
@@ -18,7 +18,7 @@ This repository is a ROS package. Here is a quick description of the folders.
 * ***src*** : Scripts contained in this repository
 
 
-##Use this package
+## Use this package
 
 
 1. Create a ROS workspace ***mkdir -p ~/workspaceRos/src, cd ~/workspaceRos, catkin_make***.
