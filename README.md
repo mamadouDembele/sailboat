@@ -1,7 +1,8 @@
 Autonomous-Sailboat
 ===================
 
-This repository deals with autonomous sailboat. It is part of my internship
+My internship deals with this problem of controlling sailboat robots, which I am working on with the University of Plymouth. The first part of this internship consists of making a numerical simulation on a computer. The ROS middleware and its graphical visualization tool were used to perform this simulation. The developed code was written in C++.
+
 
 Getting Started
 ---------------
