@@ -43,7 +43,7 @@ For this situation two algorithms have been developed. The first one consists in
 
 
 <h3>On the figures, the red arrow indicates the direction of the wind, the small white dots indicate the trajectory of the boat after several turns, The big dot in the middle is the physical buoy. </h3>
-------------------------------
+<hr />
 The second algorithm is that the boat can make a square. For this same problem the results are rather satisfactory than the first one. The boat manages to stay in the circle with the different speed values.
 
 <img src="figure/quadri1.png" alt="quadri1" style="display:inline-block;" width="300" height="340"/> <img src="figure/quadri2.png" alt="quadri2" style="display:inline-block;" width="300" height="340"/> <img src="figure/quadri3.png" alt="quadri3" style="display:inline-block;" width="300" height="340"/>
