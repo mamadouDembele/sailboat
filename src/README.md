@@ -23,7 +23,8 @@ The idea of the first algorithm is to make the boat do a cycloid. This cycloid w
 
 <div id="centre">
 <div align="center"><img src="figure/sk_figure.png" alt="sk_figure"  width="550" height="340" /></div>
------------------------------
+
+<hr/>
 
 The next 3 figures show the boat performing the holding mission with different wind speed values. The purpose of these figures is to justify the robustness of the control law.
 
