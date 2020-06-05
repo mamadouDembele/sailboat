@@ -31,10 +31,10 @@ double delta_s3=0, delta_s4=M_PI/3;
 //p1=0.03; p2=40; p3=6000; p4=200; p5=1500; p6=0.5; p7=0.5; p8=2; p9=300; p10=400; p11=0.2; % Aland
 double p1=0.05, p2=0.2, p3=6000, p4=1000, p5=2000, p6=1, p7=1, p8=2, p9=300, p10=10000, p11=1; // Vamos
 //double p1=0.1, p2=1,p3=6000, p4=1000, p5=2000,p6=1,p7=1,p8=2,p9=300,p10=10000;
-vector<double> x1={20,20,0,0.0,0.0}; // the state vector of the sailboat
-vector<double> x2={-20,-20,0,0.0,0.0};
-vector<double> x3={10,-10,0,0.0,0.0};
-vector<double> x4={-10,10,1.25,5,0};
+vector<double> x1={0,0,-M_PI/2,0.0,0.0}; // the state vector of the sailboat
+vector<double> x2={0,0,-M_PI/2,0.0,0.0};
+vector<double> x3={0,0,M_PI/2,0.0,0.0};
+vector<double> x4={0,0,M_PI/2,0,0};
 vector<double> xdot={0.0,0.0,0.0,0.0,0.0};
 
 
@@ -102,9 +102,9 @@ void print_boat(visualization_msgs::Marker& marker, geometry_msgs::TransformStam
     br.sendTransform(transformStamped);
     //visualisation of the boat
     q.setRPY(M_PI/2, 0, M_PI/2);
-    msgs.pose.position.x=-4.5;
-    msgs.pose.position.y=-2.4;
-    msgs.pose.position.z=-2.5;
+    msgs.pose.position.x=-1.0;
+    msgs.pose.position.y=-0.5;
+    msgs.pose.position.z=-0.5;
     tf::quaternionTFToMsg(q, msgs.pose.orientation);
     marker.header.frame_id = name;
     marker.header.stamp = ros::Time::now();
@@ -113,9 +113,9 @@ void print_boat(visualization_msgs::Marker& marker, geometry_msgs::TransformStam
     marker.type = visualization_msgs::Marker::MESH_RESOURCE;
     marker.action = visualization_msgs::Marker::ADD;
     marker.pose =msgs.pose;
-    marker.scale.x = 0.002;
-    marker.scale.y = 0.002;
-    marker.scale.z = 0.002;
+    marker.scale.x = 0.0004;
+    marker.scale.y = 0.0004;
+    marker.scale.z = 0.0004;
     marker.color.a = 1.0;
     marker.color.r = 1.0;
     marker.color.g = 1.0;
@@ -131,14 +131,14 @@ void print_sail(visualization_msgs::Marker& marker, geometry_msgs::TransformStam
     tf::Quaternion q;
     q.setRPY(0, 0, delta_s);
     transformStamped.header.stamp = ros::Time::now();
-    transformStamped.transform.translation.x =1.8;
+    transformStamped.transform.translation.x =0.35;
     transformStamped.transform.translation.y = 0.0;//-0.2;
-    transformStamped.transform.translation.z = 2.5;
+    transformStamped.transform.translation.z = 0.35;
     tf::quaternionTFToMsg(q,transformStamped.transform.rotation);
     br.sendTransform(transformStamped);
 
     //visualisation of the sail
-    msgs.pose.position.x=-3.4;
+    msgs.pose.position.x=-1.15;
     msgs.pose.position.y=0;
     msgs.pose.position.z=0;
     q.setRPY(M_PI/2, 0, M_PI/2);
@@ -150,9 +150,9 @@ void print_sail(visualization_msgs::Marker& marker, geometry_msgs::TransformStam
     marker.type = visualization_msgs::Marker::MESH_RESOURCE;
     marker.action = visualization_msgs::Marker::ADD;
     marker.pose =msgs.pose;
-    marker.scale.x = 0.002;
-    marker.scale.y = 0.0016;
-    marker.scale.z = 0.0012;
+    marker.scale.x = 0.0005;
+    marker.scale.y = 0.0004;
+    marker.scale.z = 0.00038;
     marker.color.a = 5.0;
     marker.color.r = 0.0;
     marker.color.g = 1.0;
@@ -165,17 +165,17 @@ void print_rudder(visualization_msgs::Marker& marker, geometry_msgs::TransformSt
     transformStamped.header.frame_id = name1;
     transformStamped.child_frame_id = name2;
     transformStamped.header.stamp = ros::Time::now();
-    transformStamped.transform.translation.x =-4.4;
+    transformStamped.transform.translation.x =-0.7;
     transformStamped.transform.translation.y = 0.0;
-    transformStamped.transform.translation.z = 1-0.5;
+    transformStamped.transform.translation.z = 0;
     tf::Quaternion q;
     q.setRPY(0, 0, ur);
     tf::quaternionTFToMsg(q,transformStamped.transform.rotation);
     br.sendTransform(transformStamped);
     //visualisation of the rudder
-    msgs.pose.position.x=-0.65;
+    msgs.pose.position.x=-0.5;
     msgs.pose.position.y=0;
-    msgs.pose.position.z=-1.4;
+    msgs.pose.position.z=-0.3;
     q.setRPY(M_PI/2, 0, M_PI/2);
     tf::quaternionTFToMsg(q, msgs.pose.orientation);
     marker.header.frame_id = name2;
@@ -185,9 +185,9 @@ void print_rudder(visualization_msgs::Marker& marker, geometry_msgs::TransformSt
     marker.type = visualization_msgs::Marker::MESH_RESOURCE;
     marker.action = visualization_msgs::Marker::ADD;
     marker.pose =msgs.pose;
-    marker.scale.x = 0.001;
-    marker.scale.y = 0.0015;
-    marker.scale.z = 0.0015;
+    marker.scale.x = 0.0007;
+    marker.scale.y = 0.0004;
+    marker.scale.z = 0.0004;
     marker.color.a = 20.0;
     marker.color.r = 1.0;
     marker.color.g = 1.0;
@@ -270,6 +270,14 @@ int main(int argc, char **argv)
     geometry_msgs::TransformStamped transformStamped_rudder;
     tf2_ros::TransformBroadcaster br_rudder;
 
+    n.param<double>("boatx1", x1[0], 0);
+    n.param<double>("boaty1", x1[1], 0);
+    n.param<double>("boatx2", x2[0], 0);
+    n.param<double>("boaty2", x2[1], 0);
+    n.param<double>("boatx3", x3[0], 0);
+    n.param<double>("boaty3", x3[1], 0);
+    n.param<double>("boatx4", x4[0], 0);
+    n.param<double>("boaty4", x4[1], 0);
     n.param<double>("psi_wind", psi_w, 0);
     ros::Rate loop_rate(300);
     while (ros::ok()) {
@@ -360,7 +368,7 @@ int main(int argc, char **argv)
         tf::quaternionTFToMsg(q_wind, marker_wind.pose.orientation);
         marker_wind.scale.x = 4.0;
         marker_wind.color.r = 1.0f;
-        marker_wind.color.g = 0.0f;
+        marker_wind.color.g = 1.0f;
         marker_wind.color.b = 0.0f;
 
         //pose_boat_pub.publish(marker_B);

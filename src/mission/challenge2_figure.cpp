@@ -82,7 +82,7 @@ int main(int argc, char **argv)
                 tf::quaternionTFToMsg(q, marker_A.pose.orientation);
                 marker_A.scale.x = 0.5;
                 marker_A.scale.y = 0.5;
-                marker_A.scale.z = 0.5;
+                marker_A.scale.z = 1.0;
                 marker_A.color.a = 1.0;
                 marker_A.color.r = 1.0f;
                 marker_A.color.g = 1.0f;
@@ -137,7 +137,7 @@ int main(int argc, char **argv)
             points1.action = visualization_msgs::Marker::ADD; 
             points1.type = visualization_msgs::Marker::LINE_STRIP;
             points1.pose.orientation.w=1;
-            points1.scale.x = 0.2;
+            points1.scale.x = 0.1;
             //points.scale.y = 0.2;
             points1.color.a = 1.0;
             points1.color.r = 1.0f;
@@ -169,7 +169,7 @@ int main(int argc, char **argv)
             points2.action = visualization_msgs::Marker::ADD; 
             points2.type = visualization_msgs::Marker::LINE_STRIP;
             points2.pose.orientation.w=1;
-            points2.scale.x = 0.2;
+            points2.scale.x = 0.1;
             points2.color.a = 1.0;
             points2.color.r = 0.0f;
             points2.color.g = 1.0f;

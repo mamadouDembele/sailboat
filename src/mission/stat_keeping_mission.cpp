@@ -246,7 +246,7 @@ int main(int argc, char **argv)
                 }
 
                 // Machine d'état
-                if ((q==0 && (d-b)[0]*(d-m)[0]+(d-b)[1]*(d-m)[1]<0) || (q==0 && norme(d-m)<norme(d-b)/5))
+                if ((q==0 && (d-b)[0]*(d-m)[0]+(d-b)[1]*(d-m)[1]<0) || (q==0 && norme(d-m)<norme(d-b)/15))
                 {
                     ROS_INFO("State 1");
                     q=1;
@@ -257,7 +257,7 @@ int main(int argc, char **argv)
                     ROS_INFO("State 2");
                     q=2;
                 }
-                if ((q==2 && (a-c)[0]*(a-m)[0]+(a-c)[1]*(a-m)[1]<0) || (q==2 && (norme(a-m)<norme(a-c)/5)) )
+                if ((q==2 && (a-c)[0]*(a-m)[0]+(a-c)[1]*(a-m)[1]<0) || (q==2 && (norme(a-m)<norme(a-c)/15)) )
                 {
                     ROS_INFO("State 3");
                     q=3;

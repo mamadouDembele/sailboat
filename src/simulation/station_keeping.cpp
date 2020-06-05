@@ -22,6 +22,18 @@ tf::Quaternion q_sail, q_wind;
 
 //-----Fonction-----//
 
+void publication_point(geometry_msgs::Point& msg, Eigen::Vector2d a)
+{
+    msg.x=a[0];
+    msg.y=a[1];
+    msg.z=0;
+}
+
+void publication_float(std_msgs::Float64& msg, double a)
+{
+    msg.data=a;
+}
+
 double sign(double x)
 {
     if (x<0)
@@ -140,7 +152,7 @@ int main(int argc, char **argv)
     ros::Publisher radius_rc = n.advertise<std_msgs::Float64>("radius_rc", 1000);
     ros::Publisher radius_pub = n.advertise<std_msgs::Float64>("radius_r", 1000);
     ros::Publisher pointsk = n.advertise<geometry_msgs::Point>("sk", 1000);
-
+    ros::Publisher poswind_pub = n.advertise<geometry_msgs::Point>("pos_wind", 1000);
   
 	n.param<double>("SKx", SK[0], 0);
 	n.param<double>("SKy", SK[1], 0);
@@ -150,7 +162,7 @@ int main(int argc, char **argv)
     double t0 = ros::Time::now().toSec();
     while(ros::ok()){
     	geometry_msgs::Vector3 msg;
-    	geometry_msgs::Point cA, cB, cC, cD, cC1, cC2, cSK;
+    	geometry_msgs::Point cA, cB, cC, cD, cC1, cC2, cSK, wind_point;
     	std_msgs::Float64 radius, rad_r;
 
     	double roll,pitch;
@@ -257,30 +269,19 @@ int main(int argc, char **argv)
 	    	com_servo.publish(msg);
 
 	    	//--------publication for the visualisation---------//
-	    	cA.x=a[0];
-	    	cA.y=a[1];
-	    	cA.z=0;
-	    	cSK.x=SK[0];
-	    	cSK.y=SK[1];
-	    	cSK.z=0;
-	    	cB.x=b[0];
-	    	cB.y=b[1];
-	    	cB.z=0;
-	    	cC.x=c[0];
-	    	cC.y=c[1];
-	    	cC.z=0;
-	    	cD.x=d[0];
-	    	cD.y=d[1];
-	    	cD.z=0;
-	    	cC1.x=c1[0];
-	    	cC1.y=c1[1];
-	    	cC1.z=0;
-	    	cC2.x=c2[0];
-	    	cC2.y=c2[1];
-	    	cC2.z=0;
-	    	radius.data=r_c;
-	    	rad_r.data=r;
+	    	publication_point(cA,a);
+	    	publication_point(cSK, SK);
+	    	publication_point(cB, b);
+	    	publication_point(cC, c);
+	    	publication_point(cD, d);
+	    	publication_point(cC1, c1);
+	    	publication_point(cC2, c2);
+	    	publication_point(wind_point, SK);
+	    	publication_float(radius, r_c);
+	    	publication_float(rad_r, r);
 
+
+	    	poswind_pub.publish(wind_point);
 	    	pointa.publish(cA);
 	    	pointb.publish(cB);
 	    	pointc.publish(cC);

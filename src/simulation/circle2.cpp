@@ -137,6 +137,7 @@ int main(int argc, char **argv)
     ros::Publisher circle1_pub = n.advertise<visualization_msgs::Marker>( "visualization_circle1",0 );
     ros::Publisher circle2_pub = n.advertise<visualization_msgs::Marker>( "visualization_circle2",0 );
     ros::Publisher com_servo = n.advertise<geometry_msgs::Vector3>("actuators", 1000);
+    ros::Publisher poswind_pub = n.advertise<geometry_msgs::Point>("pos_wind", 1000);
 
     ros::Rate loop_rate(100);
 
@@ -146,6 +147,7 @@ int main(int argc, char **argv)
     double t0 = ros::Time::now().toSec();
     while(ros::ok()){
     	geometry_msgs::Vector3 msg;
+    	geometry_msgs::Point wind_point;
 	    visualization_msgs::Marker marker_sk, marker_c1, marker_c2, circle, circle1, circle2;
 
     	double roll,pitch;
@@ -393,6 +395,11 @@ int main(int argc, char **argv)
 
 		    }
 
+		    wind_point.x=SK[0];
+	        wind_point.y=SK[1];
+	        wind_point.z=0;
+
+	        poswind_pub.publish(wind_point);
 		    pointsk_pub.publish(marker_sk);
 		    pointc1_pub.publish(marker_c1);
 		    pointc2_pub.publish(marker_c2);

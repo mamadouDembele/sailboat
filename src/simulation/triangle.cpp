@@ -30,6 +30,20 @@ tf::Quaternion q_sail, q_wind;
 bool initStateFinie=true;
 
 
+
+void publication_point(geometry_msgs::Point& msg, Eigen::Vector2d a)
+{
+    msg.x=a[0];
+    msg.y=a[1];
+    msg.z=0;
+}
+
+void publication_float(std_msgs::Float64& msg, double a)
+{
+    msg.data=a;
+}
+
+
 double sign(double x)
 {
     if (x>0)
@@ -113,13 +127,14 @@ int main(int argc, char **argv)
     ros::Publisher radius_r_pub = n.advertise<std_msgs::Float64>("radius_circle", 1000);
     ros::Publisher radius_rc_pub = n.advertise<std_msgs::Float64>("radius_circle_cuic", 1000);
     ros::Publisher pointsk = n.advertise<geometry_msgs::Point>("sk", 1000);
+    ros::Publisher poswind_pub = n.advertise<geometry_msgs::Point>("pos_wind", 1000);
 
     n.param<double>("radius_r", radius, 0);
     ros::Rate loop_rate(100);
     double t0 = ros::Time::now().toSec();
     while(ros::ok()){
     	geometry_msgs::Vector3 msg;
-    	geometry_msgs::Point cA, cB, cC, cSK;
+    	geometry_msgs::Point cA, cB, cC, cSK, wind_point;
     	std_msgs::Float64 rad_rc, rad_r;
     	visualization_msgs::Marker marker;
 
@@ -209,21 +224,15 @@ int main(int argc, char **argv)
 	    	msg.z=0;
 	    	com_servo.publish(msg);
 
-	    	cA.x=a[0];
-	    	cA.y=a[1];
-	    	cA.z=0;
-	    	cSK.x=SK[0];
-	    	cSK.y=SK[1];
-	    	cSK.z=0;
-	    	cB.x=b[0];
-	    	cB.y=b[1];
-	    	cB.z=0;
-	    	cC.x=c[0];
-	    	cC.y=c[1];
-	    	cC.z=0;
-	    	rad_rc.data=R;
-	    	rad_r.data=radius;
+	    	publication_point(cA, a);
+	    	publication_point(cSK, SK);
+	    	publication_point(cB, b);
+	    	publication_point(cC, c);
+	    	publication_point(wind_point, SK);
+	    	publication_float(rad_rc, R);
+	    	publication_float(rad_r, radius);
 
+	    	poswind_pub.publish(wind_point);
 	    	pointa.publish(cA);
 	    	pointb.publish(cB);
 	    	pointc.publish(cC);

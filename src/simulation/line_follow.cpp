@@ -113,6 +113,7 @@ int main(int argc, char **argv)
     ros::Publisher line_pub = n.advertise<visualization_msgs::Marker>( "visualization_line",0 );
     ros::Publisher lineLeft_pub = n.advertise<visualization_msgs::Marker>( "visualization_lineLeft",0 );
     ros::Publisher lineRight_pub = n.advertise<visualization_msgs::Marker>( "visualization_lineRight",0 );
+    ros::Publisher poswind_pub = n.advertise<geometry_msgs::Point>("pos_wind", 1000);
 
     n.param<double>("a_x", a[0], 0);
     n.param<double>("b_x", b[0], 0);
@@ -123,6 +124,7 @@ int main(int argc, char **argv)
     double t0 = ros::Time::now().toSec();
     while(ros::ok()){
     	geometry_msgs::Vector3 msg;
+    	geometry_msgs::Point wind_point;
     	visualization_msgs::Marker marker_line, marker_A, marker_B, marker_lineLeft, marker_lineRight;
 
 
@@ -335,8 +337,12 @@ int main(int argc, char **argv)
 	        marker_lineRight.color.r = 1.0f;
 	        marker_lineRight.color.g = 0.0f;
 	        marker_lineRight.color.b = 0.0f;
+	        wind_point.x=b[0]+5.0;
+	        wind_point.y=b[1]+5.0;
+	        wind_point.z=0;
 
 	        // Publication
+	        poswind_pub.publish(wind_point);
 		    pointA_pub.publish(marker_A);
 		    pointB_pub.publish(marker_B);
 		    line_pub.publish(marker_line);

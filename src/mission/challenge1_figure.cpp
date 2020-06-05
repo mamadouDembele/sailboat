@@ -111,9 +111,9 @@ int main(int argc, char **argv)
                 double phi=-M_PI/2;
                 q.setRPY(0, phi, 0);
                 tf::quaternionTFToMsg(q, marker_A.pose.orientation);
-                marker_A.scale.x = 0.5;
-                marker_A.scale.y = 0.5;
-                marker_A.scale.z = 0.5;
+                marker_A.scale.x = 0.3;
+                marker_A.scale.y = 0.3;
+                marker_A.scale.z = 0.3;
                 marker_A.color.a = 1.0;
                 marker_A.color.r = 1.0f;
                 marker_A.color.g = 1.0f;
@@ -176,7 +176,7 @@ int main(int argc, char **argv)
             points.action = visualization_msgs::Marker::ADD; 
             points.type = visualization_msgs::Marker::LINE_STRIP;
             points.pose.orientation.w=1;
-            points.scale.x = 0.5;
+            points.scale.x = 0.3;
             //points.scale.y = 0.2;
             points.color.a = 1.0;
             points.color.r = 1.0f;
@@ -223,7 +223,7 @@ int main(int argc, char **argv)
             line1.action = visualization_msgs::Marker::ADD; 
             line1.type = visualization_msgs::Marker::LINE_STRIP;
             line1.pose.orientation.w=1;
-            line1.scale.x = 0.5;
+            line1.scale.x = 0.3;
             //points.scale.y = 0.2;
             line1.color.a = 1.0;
             line1.color.r = 0.0f;
@@ -246,7 +246,7 @@ int main(int argc, char **argv)
             line2.action = visualization_msgs::Marker::ADD; 
             line2.type = visualization_msgs::Marker::LINE_STRIP;
             line2.pose.orientation.w=1;
-            line2.scale.x = 0.5;
+            line2.scale.x = 0.3;
             line2.color.a = 1.0;
             line2.color.r = 0.0f;
             line2.color.g = 0.0f;
@@ -268,7 +268,7 @@ int main(int argc, char **argv)
             line3.action = visualization_msgs::Marker::ADD; 
             line3.type = visualization_msgs::Marker::LINE_STRIP;
             line3.pose.orientation.w=1;
-            line3.scale.x = 0.5;
+            line3.scale.x = 0.3;
             line3.color.a = 1.0;
             line3.color.r = 0.0f;
             line3.color.g = 0.0f;
@@ -290,7 +290,7 @@ int main(int argc, char **argv)
             pointsf.action = visualization_msgs::Marker::ADD; 
             pointsf.type = visualization_msgs::Marker::LINE_STRIP;
             pointsf.pose.orientation.w=1;
-            pointsf.scale.x = 0.5;
+            pointsf.scale.x = 0.3;
             pointsf.color.a = 1.0;
             pointsf.color.r = 1.0f;
             pointsf.color.g = 1.0f;
@@ -313,7 +313,7 @@ int main(int argc, char **argv)
             points1.action = visualization_msgs::Marker::ADD; 
             points1.type = visualization_msgs::Marker::LINE_STRIP;
             points1.pose.orientation.w=1;
-            points1.scale.x = 0.2;
+            points1.scale.x = 0.1;
         	//points.scale.y = 0.2;
         	points1.color.a = 1.0;
             points1.color.r = 1.0f;
@@ -345,7 +345,7 @@ int main(int argc, char **argv)
             points2.action = visualization_msgs::Marker::ADD; 
             points2.type = visualization_msgs::Marker::LINE_STRIP;
             points2.pose.orientation.w=1;
-            points2.scale.x = 0.2;
+            points2.scale.x = 0.1;
             //points.scale.y = 0.2;
             points2.color.a = 1.0;
             points2.color.r = 1.0f;
@@ -377,7 +377,7 @@ int main(int argc, char **argv)
             points3.action = visualization_msgs::Marker::ADD; 
             points3.type = visualization_msgs::Marker::LINE_STRIP;
             points3.pose.orientation.w=1;
-            points3.scale.x = 0.2;
+            points3.scale.x = 0.1;
             //points.scale.y = 0.2;
             points3.color.a = 1.0;
             points3.color.r = 1.0f;

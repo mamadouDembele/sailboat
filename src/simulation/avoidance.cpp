@@ -143,6 +143,7 @@ int main(int argc, char **argv)
     ros::Publisher pointd = n.advertise<geometry_msgs::Point>("d_avoid", 1000);
     ros::Publisher radius_pub = n.advertise<std_msgs::Float64>("radius_r", 1000);
     ros::Publisher pointsk = n.advertise<geometry_msgs::Point>("sk", 1000);
+    ros::Publisher poswind_pub = n.advertise<geometry_msgs::Point>("pos_wind", 1000);
 
 	n.param<double>("SKx", SK[0], 0);
 	n.param<double>("SKy", SK[1], 0);
@@ -152,7 +153,7 @@ int main(int argc, char **argv)
     double t0 = ros::Time::now().toSec();
     while(ros::ok()){
     	geometry_msgs::Vector3 msg;
-    	geometry_msgs::Point cA, cB, cC, cD, cSK;
+    	geometry_msgs::Point cA, cB, cC, cD, cSK, wind_point;
     	std_msgs::Float64 radius;
  
     	double roll,pitch;
@@ -262,8 +263,10 @@ int main(int argc, char **argv)
             publication_point(cB, b);
             publication_point(cC, c);
             publication_point(cD, d);
+            publication_point(wind_point, SK);
             publication_float(radius, r);
 
+            poswind_pub.publish(wind_point);
 	    	pointa.publish(cA);
 	    	pointb.publish(cB);
 	    	pointc.publish(cC);

@@ -16,7 +16,6 @@
 using namespace std;
 
 Eigen::Vector2d m1, m2, m3, m4; // Position of the boat
-Eigen::Vector2d a, b; // the ligne we want to follow
 double r, zeta=M_PI/4, urmax=M_PI/4;// rayon de couloir, l'angle de près, l'angle maximale du gouvernail
 double theta1, theta2, theta3, theta4, psi_w; // cap de la voile, l'angle du vent
 double q1=1, q2=1, q3=1, q4=1; // valeur d'hystérésis and the speed of the wind
@@ -24,6 +23,10 @@ double ur1,us1, ur2,us2, ur3,us3, ur4,us4;
 double ks=1.0; // constante k pour regler l'angle de la sail
 double Gamma=M_PI/4; // Constance pour rendre la ligne plus attractive
 tf::Quaternion q_sail1, q_sail2, q_sail3, q_sail4, q_wind;
+
+Eigen::Vector2d actualposition1={-47.5, 67.5}, actualposition2={47.5, 67.5}, actualposition3={-47.5, -67.5}, actualposition4={47.5,-67.5};
+Eigen::Vector2d next_point1, next_point2, next_point3, next_point4;
+vector<Eigen::Vector2d> v, point_valide;
 
 double sign(double x)
 {
@@ -74,6 +77,21 @@ void controler_line(Eigen::Vector2d m, double theta, double psi_w, Eigen::Vector
     us=ks*(M_PI/4)*(cos(psi_w-theta_bar)+1);
 
 }
+
+
+Eigen::Vector2d near_point(Eigen::Vector2d actualposition, vector<Eigen::Vector2d> v)
+{
+    double distMinimal=500000000000;
+    Eigen::Vector2d next_point;
+    for (int i=0; i<v.size(); i++)
+    {
+        if (distMinimal>norme(actualposition-v[i])){
+            distMinimal=norme(actualposition-v[i]);
+            next_point=v[i];
+        }
+    }
+    return next_point;
+} 
 
 void publication_command(geometry_msgs::Vector3& msg, double ur, double us)
 {
@@ -139,6 +157,7 @@ void windCallback(const geometry_msgs::Quaternion::ConstPtr& msg) {
 }
 
 
+
 int main(int argc, char **argv)
 {   
 	ros::init(argc, argv, "node_area_scanning");
@@ -164,11 +183,14 @@ int main(int argc, char **argv)
     ros::Publisher lineRight_pub = n.advertise<visualization_msgs::Marker>( "visualization_lineRight",0 );
 
 
-    n.param<double>("a_x", a[0], 0);
-    n.param<double>("b_x", b[0], 0);
-    n.param<double>("a_y", a[1], 0);
-    n.param<double>("b_y", b[1], 0);
-    n.param<double>("radius", r, 0);
+    for (int j=0; j<20; j++){
+        for (int i=0; i<20; i++)
+        {
+            Eigen::Vector2d c={-50+i*5+5.0/2.0, 50-j*5-5.0/2.0};
+            v.push_back(c);
+            ROS_INFO("cx=%f, cy=%f", c[0], c[1]);
+        }
+    }
     ros::Rate loop_rate(300);
     double t0 = ros::Time::now().toSec();
     while(ros::ok()){
@@ -190,12 +212,49 @@ int main(int argc, char **argv)
         }
         
         else{
-            //ROS_INFO("mx=%f", m[0]);
-            //ROS_INFO("my=%f", m[1]);
-            controler_line(m1, theta1, psi_w, a, b, ur1, us1, q1);
-            controler_line(m2, theta2, psi_w, a, b, ur2, us2, q2);
-            controler_line(m3, theta3, psi_w, a, b, ur3, us3, q3);
-            controler_line(m4, theta4, psi_w, a, b, ur4, us4, q4);
+            
+            next_point1=near_point(actualposition1, v);
+            next_point2=near_point(actualposition2, v);
+            next_point3=near_point(actualposition3, v);
+            next_point4=near_point(actualposition4, v);
+            //ROS_INFO("next_point1 x=%f, y=%f", next_point1[0], next_point1[1]);
+            //ROS_INFO("next_point2 x=%f, y=%f", next_point2[0], next_point2[1]);
+            //ROS_INFO("next_point3 x=%f, y=%f", next_point3[0], next_point3[1]);
+            //ROS_INFO("next_point4 x=%f, y=%f", next_point4[0], next_point4[1]);
+            controler_line(m1, theta1, psi_w, actualposition1, next_point1, ur1, us1, q1);
+            controler_line(m2, theta2, psi_w, actualposition2, next_point2, ur2, us2, q2);
+            controler_line(m3, theta3, psi_w, actualposition3, next_point3, ur3, us3, q3);
+            controler_line(m4, theta4, psi_w, actualposition4, next_point4, ur4, us4, q4);
+
+            if (norme(m1-next_point1)<0.5)
+            {
+                point_valide.push_back(next_point1);
+                //ROS_INFO("next_point1 x=%f, y=%f", next_point1[0], next_point1[1]);
+                actualposition1=next_point1;
+                v.erase(std::remove(v.begin(), v.end(), next_point1), v.end());
+            }
+
+             if (norme(m2-next_point2)<0.5)
+            {
+                point_valide.push_back(next_point2);
+                actualposition2=next_point2;
+                v.erase(std::remove(v.begin(), v.end(), next_point2), v.end());
+            }
+
+            if (norme(m3-next_point3)<0.5)
+            {
+                point_valide.push_back(next_point3);
+                actualposition3=next_point3;
+                v.erase(std::remove(v.begin(), v.end(), next_point3), v.end());
+            }
+
+            if (norme(m4-next_point4)<0.5)
+            {
+                point_valide.push_back(next_point4);
+                actualposition4=next_point4;
+                v.erase(std::remove(v.begin(), v.end(), next_point4), v.end());
+            }
+
             //ROS_INFO("angle_sail us=%f", us);
             publication_command(msg1, ur1, us1);
             publication_command(msg2, ur2, us2);
@@ -206,199 +265,7 @@ int main(int argc, char **argv)
             com_servo3.publish(msg3);
             com_servo4.publish(msg4);
 
-            //visualisation
-
-            //point A
-            marker_A.header.frame_id = "map";
-            marker_A.header.stamp = ros::Time::now();
-            marker_A.ns = "Point_A";
-            marker_A.id = 0;
-            marker_A.action = visualization_msgs::Marker::ADD; 
-            marker_A.type = visualization_msgs::Marker::SPHERE;
-            marker_A.pose.position.x = a[0];
-            marker_A.pose.position.y = a[1];
-            marker_A.pose.position.z=0;
-            marker_A.pose.orientation.x=0;
-            marker_A.pose.orientation.y=0;
-            marker_A.pose.orientation.z=0;
-            marker_A.pose.orientation.w=1;
-            marker_A.scale.x = 1;
-            marker_A.scale.y = 1;
-            marker_A.scale.z = 1;
-            marker_A.color.a = 1.0;
-            marker_A.color.r = 1.0f;
-            marker_A.color.g = 1.0f;
-            marker_A.color.b = 1.0f;
-
-
-            //point B
-            marker_B.header.frame_id = "map";
-            marker_B.header.stamp = ros::Time::now();
-            marker_B.ns = "point_B";
-            marker_B.id = 0;
-            marker_B.action = visualization_msgs::Marker::ADD;
-            marker_B.type = visualization_msgs::Marker::SPHERE;
-            marker_B.pose.position.x =b[0];
-            marker_B.pose.position.y = b[1];
-            marker_B.pose.position.z=0;
-            marker_B.pose.orientation.x=0;
-            marker_B.pose.orientation.y=0;
-            marker_B.pose.orientation.z=0;
-            marker_B.pose.orientation.w=1;
-            marker_B.scale.x = 1;
-            marker_B.scale.y = 1;
-            marker_B.scale.z = 1;
-            marker_B.color.a = 1.0; 
-            marker_B.color.r = 1.0f;
-            marker_B.color.g = 0.0f;
-            marker_B.color.b = 0.0f;
-
-
-            //Line
-            marker_line.header.frame_id = "map";
-            marker_line.header.stamp = ros::Time::now();
-            marker_line.ns = "line";
-            marker_line.id = 0;
-            marker_line.action = visualization_msgs::Marker::ADD;
-            marker_line.type = visualization_msgs::Marker::LINE_STRIP;
-            marker_line.scale.x = 0.5;
-            geometry_msgs::Point cA;
-            geometry_msgs::Point cB;
-
-            //
-            if (b[0]==a[0])
-            {
-                cA.x=a[0];
-                cA.y=-160;
-                cA.z=0;
-                cB.x=a[0];
-                cB.y=160;
-                cB.z=0;
-
-            }
-            else{
-                double coeff_a=(b[1]-a[1])/(b[0]-a[0]);
-                double coeff_b=a[1]-coeff_a*a[0];
-                cA.x=160;
-                cA.y=coeff_a*cA.x+coeff_b;
-                cA.z=0;
-                cB.x=-160;
-                cB.y=coeff_a*cB.x+coeff_b;
-                cB.z=0;
-            }
             
-            marker_line.points.push_back(cA);
-            marker_line.points.push_back(cB);
-            marker_line.pose.orientation.x=0;
-            marker_line.pose.orientation.y=0;
-            marker_line.pose.orientation.z=0;
-            marker_line.pose.orientation.w=1;
-            marker_line.color.a=0.5;
-            marker_line.color.r = 0.0f;
-            marker_line.color.g = 0.0f;
-            marker_line.color.b = 1.0f;
-
-
-            //Line left
-            marker_lineLeft.header.frame_id = "map";
-            marker_lineLeft.header.stamp = ros::Time::now();
-            marker_lineLeft.ns = "line_left";
-            marker_lineLeft.id = 0;
-            marker_lineLeft.action = visualization_msgs::Marker::ADD;
-            marker_lineLeft.type = visualization_msgs::Marker::LINE_STRIP;
-            marker_lineLeft.scale.x = 0.2;
-            
-            if (a[0]==b[0])
-            {
-                Eigen::Vector2d u={-1,0};
-                Eigen::Vector2d b2=a+r*u;
-                cA.x=b2[0];
-                cA.y=150;
-                cA.z=0;
-                cB.x=b2[0];
-                cB.y=-150;
-                cB.z=0;
-            }
-
-            else{
-                Eigen::Vector2d diff=b-a;
-                double nor=norme(diff);
-                Eigen::Vector2d u={-((b-a)/nor)[1],((b-a)/nor)[0]};
-                Eigen::Vector2d b2=a+r*u;
-                double coeff_a=(b[1]-a[1])/(b[0]-a[0]);
-                double coeff_b1=b2[1]-coeff_a*b2[0];
-                cA.x=150;
-                cA.y=coeff_a*cA.x+coeff_b1;
-                cA.z=0;
-                cB.x=-150;
-                cB.y=coeff_a*cB.x+coeff_b1;
-                cB.z=0;
-            }
-            
-            marker_lineLeft.points.push_back(cA);
-            marker_lineLeft.points.push_back(cB);
-            marker_lineLeft.pose.orientation.x=0;
-            marker_lineLeft.pose.orientation.y=0;
-            marker_lineLeft.pose.orientation.z=0;
-            marker_lineLeft.pose.orientation.w=1;
-            marker_lineLeft.color.a=0.5;
-            marker_lineLeft.color.r = 1.0f;
-            marker_lineLeft.color.g = 0.0f;
-            marker_lineLeft.color.b = 0.0f;
-            
-            //Line right
-            marker_lineRight.header.frame_id = "map";
-            marker_lineRight.header.stamp = ros::Time::now();
-            marker_lineRight.ns = "line_right";
-            marker_lineRight.id = 0;
-            marker_lineRight.action = visualization_msgs::Marker::ADD;
-            marker_lineRight.type = visualization_msgs::Marker::LINE_STRIP;
-            marker_lineRight.scale.x = 0.2;
-            
-            if (a[0]==b[0])
-            {
-                Eigen::Vector2d u={1,0};
-                Eigen::Vector2d b2=a+r*u;
-                cA.x=b2[0];
-                cA.y=150;
-                cA.z=0;
-                cB.x=b2[0];
-                cB.y=-150;
-                cB.z=0;
-            }
-
-            else{
-                Eigen::Vector2d diff=b-a;
-                double nor=norme(diff);
-                Eigen::Vector2d u={((b-a)/nor)[1],-((b-a)/nor)[0]};
-                Eigen::Vector2d b2=a+r*u;
-                double coeff_a=(b[1]-a[1])/(b[0]-a[0]);
-                double coeff_b1=b2[1]-coeff_a*b2[0];
-                cA.x=150;
-                cA.y=coeff_a*cA.x+coeff_b1;
-                cA.z=0;
-                cB.x=-150;
-                cB.y=coeff_a*cB.x+coeff_b1;
-                cB.z=0;
-            }
-            
-            marker_lineRight.points.push_back(cA);
-            marker_lineRight.points.push_back(cB);
-            marker_lineRight.pose.orientation.x=0;
-            marker_lineRight.pose.orientation.y=0;
-            marker_lineRight.pose.orientation.z=0;
-            marker_lineRight.pose.orientation.w=1;
-            marker_lineRight.color.a=0.5;
-            marker_lineRight.color.r = 1.0f;
-            marker_lineRight.color.g = 0.0f;
-            marker_lineRight.color.b = 0.0f;
-
-            // Publication
-            pointA_pub.publish(marker_A);
-            pointB_pub.publish(marker_B);
-            line_pub.publish(marker_line);
-            lineLeft_pub.publish(marker_lineLeft);
-            lineRight_pub.publish(marker_lineRight);
         }
     	ros::spinOnce();
         loop_rate.sleep();

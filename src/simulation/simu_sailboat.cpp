@@ -4,12 +4,12 @@
 #include <vector>
 #include <math.h>
 #include <algorithm>
+#include "eigen3/Eigen/Dense"
 #include "visualization_msgs/Marker.h"
 #include "geometry_msgs/PoseStamped.h"
 #include "tf/tf.h"
 #include "geometry_msgs/Quaternion.h"
 #include "geometry_msgs/Vector3.h"
-#include "geometry_msgs/Twist.h"
 #include "geometry_msgs/Point.h"
 #include <tf2_ros/transform_broadcaster.h>
 #include <geometry_msgs/TransformStamped.h>
@@ -21,7 +21,7 @@ using namespace std;
 
 double dt=0.01;// dt is the simulation step 
 double ur=0,us=0; //the input of the sailboat
-double a=1; // velocity of the "true" wind
+double a=2; // velocity of the "true" wind
 double psi_w; //the angle of the "true" wind
 double delta_s=0;
 //p1=0.125; p2=29.99; p3=96.43; p4=58.07; p5=120.65; p6=0.1; p7=0; p8=0.5; p9=10; p10=29.87; p11=0; % Plymouth
@@ -30,6 +30,7 @@ double p1=0.05, p2=0.2, p3=6000, p4=1000, p5=2000, p6=1, p7=1, p8=2, p9=300, p10
 //double p1=0.1, p2=1,p3=6000, p4=1000, p5=2000,p6=1,p7=1,p8=2,p9=300,p10=10000;
 vector<double> x={0,0,0,0.0,0.0}; // the state vector of the sailboat
 vector<double> xdot={0.0,0.0,0.0,0.0,0.0};
+Eigen::Vector2d poswind;
 
 
 double sign(double x)
@@ -85,6 +86,11 @@ void commCallback(const geometry_msgs::Vector3::ConstPtr& msg) {
     us = msg->y;
 }
 
+void poswindCallback(const geometry_msgs::Point::ConstPtr& msg) {
+    poswind[0] = msg->x;
+    poswind[1] = msg->y;
+}
+
 
 int main(int argc, char **argv)
 {   
@@ -100,6 +106,7 @@ int main(int argc, char **argv)
     ros::Publisher wind_pub = n.advertise<visualization_msgs::Marker>( "visualization_wind",0 );
     //ros::Publisher pose_boat_pub = n.advertise<visualization_msgs::Marker>( "visualization_pos_boat",0 );
     ros::Subscriber commande = n.subscribe("actuators", 1000, commCallback);
+    ros::Subscriber sub1 = n.subscribe("pos_wind", 1000, poswindCallback);
 
     geometry_msgs::Point msg_pose;
     geometry_msgs::Quaternion msg_wind;
@@ -270,10 +277,10 @@ int main(int argc, char **argv)
         marker_wind.scale.y = 0.5;
         marker_wind.scale.z = 0.5;
         marker_wind.color.a = 1.5;
-        marker_wind.pose.position.x = 10;
-        marker_wind.pose.position.y = 10;
+        marker_wind.pose.position.x = poswind[0];
+        marker_wind.pose.position.y = poswind[1];
         tf::quaternionTFToMsg(q_wind, marker_wind.pose.orientation);
-        marker_wind.scale.x = 1.0;
+        marker_wind.scale.x = 3.0;
         marker_wind.color.r = 1.0f;
         marker_wind.color.g = 0.0f;
         marker_wind.color.b = 0.0f;
