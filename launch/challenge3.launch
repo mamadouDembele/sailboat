@@ -10,7 +10,7 @@
 	<param name="boaty3" type="double" value="-67.5" />
 	<param name="boatx4" type="double" value="47.5" />
 	<param name="boaty4" type="double" value="-67.5" />
-	<param name="psi_wind" type="double" value="0" />
+	<param name="psi_wind" type="double" value="4.19" />
 	
 
 	<node name="node_area_scanning" pkg="sailboat" type="area_scanning_challenge" output="screen" />
