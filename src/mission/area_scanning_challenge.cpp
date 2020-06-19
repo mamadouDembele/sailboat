@@ -16,17 +16,19 @@
 using namespace std;
 
 Eigen::Vector2d m1, m2, m3, m4; // Position of the boat
-double r, zeta=M_PI/4, urmax=M_PI/4;// rayon de couloir, l'angle de près, l'angle maximale du gouvernail
+double r=2, zeta=M_PI/4, urmax=M_PI/4;// rayon de couloir, l'angle de près, l'angle maximale du gouvernail
 double theta1, theta2, theta3, theta4, psi_w; // cap de la voile, l'angle du vent
 double q1=1, q2=1, q3=1, q4=1; // valeur d'hystérésis and the speed of the wind
+double q=0;
 double ur1,us1, ur2,us2, ur3,us3, ur4,us4;
 double ks=1.0; // constante k pour regler l'angle de la sail
 double Gamma=M_PI/4; // Constance pour rendre la ligne plus attractive
 tf::Quaternion q_sail1, q_sail2, q_sail3, q_sail4, q_wind;
-
+int i1=0, i2=0, i3=0, i4=0;
 Eigen::Vector2d actualposition1={-47.5, 67.5}, actualposition2={47.5, 67.5}, actualposition3={-47.5, -67.5}, actualposition4={47.5,-67.5};
-Eigen::Vector2d next_point1, next_point2, next_point3, next_point4;
-vector<Eigen::Vector2d> v, point_valide;
+//vector<Eigen::Vector2d> next_point1, next_point2, next_point3, next_point4;
+Eigen::Vector2d actpos1={-47.5, 67.5}, actpos2={47.5, 67.5}, actpos3={-47.5, -67.5},  actpos4={47.5,-67.5};
+vector<Eigen::Vector2d> v1, v2, v3, v4, nextPointValide, actPointValide;
 
 double sign(double x)
 {
@@ -39,6 +41,11 @@ double sign(double x)
 double norme(Eigen::Vector2d x)
 {
     return sqrt(pow(x[0],2)+pow(x[1],2));
+}
+
+double scalaire_prod(Eigen::Vector2d a, Eigen::Vector2d b)
+{
+    return a[0]*b[0]+a[1]*b[1];
 }
 
 double angle(Eigen::Vector2d x)
@@ -78,20 +85,103 @@ void controler_line(Eigen::Vector2d m, double theta, double psi_w, Eigen::Vector
 
 }
 
-
-Eigen::Vector2d near_point(Eigen::Vector2d actualposition, vector<Eigen::Vector2d> v)
+void point_attract(Eigen::Vector2d m, Eigen::Vector2d qr1, Eigen::Vector2d qr2, Eigen::Vector2d qr3, double theta, double psi_w, Eigen::Vector2d a, double& ur, double& us)
 {
-    double distMinimal=500000000000;
+    Eigen::Vector2d vect=-2*(m-a) + 0*(m-qr1)/pow(norme(m-qr1),3) + 2*(m-qr2)/pow(norme(m-qr2),3) + 0*(m-qr3)/pow(norme(m-qr3),3);
+    double theta_bar=angle(vect);
+
+    double zeta=M_PI/10;
+
+    //if ((cos(psi_w-theta_bar)+cos(zeta))<0)
+        //theta_bar=M_PI+psi_w - zeta;
+    if (cos(theta-theta_bar)>=0)
+    {
+        ur=urmax*sin(theta-theta_bar);
+    }
+    else
+    {
+        ur=urmax*sign(sin(theta-theta_bar));
+    }
+
+
+    us=ks*(M_PI/4)*(cos(psi_w-theta_bar)+1);
+}
+
+void near_list(Eigen::Vector2d& actualposition, vector<Eigen::Vector2d> v, vector<Eigen::Vector2d>& L)
+{
     Eigen::Vector2d next_point;
+    double distMinimal=5000000000;
     for (int i=0; i<v.size(); i++)
     {
         if (distMinimal>norme(actualposition-v[i])){
             distMinimal=norme(actualposition-v[i]);
-            next_point=v[i];
         }
     }
-    return next_point;
-} 
+
+    for (int i=0; i<v.size(); i++)
+    {
+        if (norme(actualposition-v[i])==distMinimal){
+            L.push_back(v[i]);
+        }
+    }
+}
+
+
+Eigen::Vector2d best_near_point_vert(Eigen::Vector2d actualposition, vector<Eigen::Vector2d> v)
+{
+
+    vector<Eigen::Vector2d> L;
+    near_list(actualposition, v, L);
+    if (L.size()==2){
+        for (int i=0; i<L.size(); i++)
+        {
+            if ((actualposition-L[i])[1]!=0){
+                return L[i];
+            }
+        }
+    }
+
+    if (L.size()==3)
+    {
+        for (int i=0; i<L.size(); i++)
+        {
+            if ((actualposition-L[i])[1]>0 ){
+                return L[i];
+            }
+        }
+    }
+    else{
+        return L[0];
+    }    
+}
+
+Eigen::Vector2d best_near_point_hori(Eigen::Vector2d actualposition, vector<Eigen::Vector2d> v)
+{
+
+    vector<Eigen::Vector2d> L;
+    near_list(actualposition, v, L);
+    if (L.size()==2){
+        for (int i=0; i<L.size(); i++)
+        {
+            if ((actualposition-L[i])[0]!=0){
+                return L[i];
+            }
+        }
+    }
+
+    if (L.size()==3)
+    {
+        for (int i=0; i<L.size(); i++)
+        {
+            if ((actualposition-L[i])[0]>0 ){
+                return L[i];
+            }
+        }
+    }
+    else{
+        return L[0];
+    }    
+}
 
 void publication_command(geometry_msgs::Vector3& msg, double ur, double us)
 {
@@ -175,27 +265,29 @@ int main(int argc, char **argv)
     ros::Publisher com_servo2 = n.advertise<geometry_msgs::Vector3>("actuators2", 1000);
     ros::Publisher com_servo3 = n.advertise<geometry_msgs::Vector3>("actuators3", 1000);
     ros::Publisher com_servo4 = n.advertise<geometry_msgs::Vector3>("actuators4", 1000);
-
-    ros::Publisher pointA_pub = n.advertise<visualization_msgs::Marker>( "visualization_pointA",0 );
-    ros::Publisher pointB_pub = n.advertise<visualization_msgs::Marker>( "visualization_pointB",0 );
-    ros::Publisher line_pub = n.advertise<visualization_msgs::Marker>( "visualization_line",0 );
-    ros::Publisher lineLeft_pub = n.advertise<visualization_msgs::Marker>( "visualization_lineLeft",0 );
-    ros::Publisher lineRight_pub = n.advertise<visualization_msgs::Marker>( "visualization_lineRight",0 );
+    ros::Publisher pub_valid1 = n.advertise<geometry_msgs::Point>("center_point1", 1000);
+    ros::Publisher pub_valid2 = n.advertise<geometry_msgs::Point>("center_point2", 1000);
+    ros::Publisher pub_valid3 = n.advertise<geometry_msgs::Point>("center_point3", 1000);
+    ros::Publisher pub_valid4 = n.advertise<geometry_msgs::Point>("center_point4", 1000);
 
 
     for (int j=0; j<20; j++){
         for (int i=0; i<20; i++)
         {
             Eigen::Vector2d c={-50+i*5+5.0/2.0, 50-j*5-5.0/2.0};
-            v.push_back(c);
-            ROS_INFO("cx=%f, cy=%f", c[0], c[1]);
+            v1.push_back(c);
+            v2.push_back(c);
+            v3.push_back(c);
+            v4.push_back(c);
+            //nextPointValide.push_back(c);
         }
     }
-    ros::Rate loop_rate(300);
+
+    ros::Rate loop_rate(100);
     double t0 = ros::Time::now().toSec();
     while(ros::ok()){
     	geometry_msgs::Vector3 msg1, msg2, msg3, msg4;
-        visualization_msgs::Marker marker_line, marker_A, marker_B, marker_lineLeft, marker_lineRight;
+        geometry_msgs::Point msgCenter1, msgCenter2, msgCenter3, msgCenter4;
         double roll,pitch;
         tf::Matrix3x3(q_sail1).getRPY(roll, pitch, theta1);
         tf::Matrix3x3(q_sail2).getRPY(roll, pitch, theta2);
@@ -213,57 +305,290 @@ int main(int argc, char **argv)
         
         else{
             
-            next_point1=near_point(actualposition1, v);
-            next_point2=near_point(actualposition2, v);
-            next_point3=near_point(actualposition3, v);
-            next_point4=near_point(actualposition4, v);
-            //ROS_INFO("next_point1 x=%f, y=%f", next_point1[0], next_point1[1]);
-            //ROS_INFO("next_point2 x=%f, y=%f", next_point2[0], next_point2[1]);
-            //ROS_INFO("next_point3 x=%f, y=%f", next_point3[0], next_point3[1]);
-            //ROS_INFO("next_point4 x=%f, y=%f", next_point4[0], next_point4[1]);
-            controler_line(m1, theta1, psi_w, actualposition1, next_point1, ur1, us1, q1);
-            controler_line(m2, theta2, psi_w, actualposition2, next_point2, ur2, us2, q2);
-            controler_line(m3, theta3, psi_w, actualposition3, next_point3, ur3, us3, q3);
-            controler_line(m4, theta4, psi_w, actualposition4, next_point4, ur4, us4, q4);
+            //Eigen::Vector2d nextpoint1=best_near_point_vert(actpos1, v1);
+            Eigen::Vector2d nextpoint2=best_near_point_hori(actpos2, v1);
+           
+            //Eigen::Vector2d nextpoint3=best_near_point_vert(actpos3, v1);
+            //Eigen::Vector2d nextpoint4=best_near_point_hori(actpos4, v1);
+            //controler_line(m1, theta1, psi_w, actpos1, nextpoint1, ur1, us1, q1);
+            controler_line(m2, theta2, psi_w, actpos2, nextpoint2, ur2, us2, q2);
+            //controler_line(m3, theta3, psi_w, actpos3, nextpoint3, ur3, us3, q3);
+            //controler_line(m4, theta4, psi_w, actpos4, nextpoint4, ur4, us4, q4);
+            //point_attract(m1, m2, m3, m4, theta1, psi_w, nextpoint1, ur1, us1);
+            //point_attract(m2, m1, m3, m4, theta2, psi_w, nextpoint2, ur2, us2);
+            //point_attract(m3, m2, m1, m4, theta3, psi_w, nextpoint3, ur3, us3);
+            //point_attract(m4, m2, m3, m1, theta4, psi_w, nextpoint4, ur4, us4);
 
-            if (norme(m1-next_point1)<0.5)
+            /*if (scalaire_prod(nextpoint1-actpos1, nextpoint1-m1)<0)
             {
-                point_valide.push_back(next_point1);
-                //ROS_INFO("next_point1 x=%f, y=%f", next_point1[0], next_point1[1]);
-                actualposition1=next_point1;
-                v.erase(std::remove(v.begin(), v.end(), next_point1), v.end());
+                actpos1=nextpoint1;
+                v1.erase(std::remove(v1.begin(), v1.end(), nextpoint1), v1.end());
+                /*if (norme(m1-nextpoint1)>2. )
+                {
+                    ROS_INFO("zap1");
+                    nextPointValide.push_back(nextpoint1);
+                }
+
+            }*/
+
+            if (scalaire_prod(nextpoint2-actpos2, nextpoint2-m2)<0)
+            {
+                actpos2=nextpoint2;
+                v1.erase(std::remove(v1.begin(), v1.end(), nextpoint2), v1.end());
+                /*if (norme(m2-nextpoint2)>2.)
+                {
+                    ROS_INFO("zap2");
+                    nextPointValide.push_back(nextpoint2);
+                }*/
+            }
+            
+            /*if (scalaire_prod(nextpoint3-actpos3, nextpoint3-m3)<0)
+            {
+                actpos3=nextpoint3;
+                v1.erase(std::remove(v1.begin(), v1.end(), nextpoint3), v1.end());
+                if (norme(m3-nextpoint3)>2.)
+                {
+                    ROS_INFO("zap3");
+                    nextPointValide.push_back(nextpoint3);
+                }
             }
 
-             if (norme(m2-next_point2)<0.5)
+            if (scalaire_prod(nextpoint4-actpos4, nextpoint4-m4)<0)
             {
-                point_valide.push_back(next_point2);
-                actualposition2=next_point2;
-                v.erase(std::remove(v.begin(), v.end(), next_point2), v.end());
+                actpos4=nextpoint4;
+                v1.erase(std::remove(v1.begin(), v1.end(), nextpoint4), v1.end());
+                if (norme(m4-nextpoint4)>2.)
+                {
+                    ROS_INFO("zap4");
+                    nextPointValide.push_back(nextpoint4);
+                }
+            }*/
+
+            //ROS_INFO("yes");
+
+            for (int i=0; i<v2.size(); i++)
+            {
+                /*if (norme(m1-v2[i])<2.)
+                {
+                     ROS_INFO("valider x=%f, y=%f", v2[i][0], v2[i][1]);
+                    msgCenter1.x=v2[i][0];
+                    msgCenter1.y=v2[i][1];
+                    msgCenter1.z=1.0;                                       
+                    pub_valid1.publish(msgCenter1);
+                    //v1.erase(std::remove(v1.begin(), v1.end(), v1[i]), v1.end());
+                    v2.erase(std::remove(v2.begin(), v2.end(), v2[i]), v2.end());
+                    //v3.erase(std::remove(v3.begin(), v3.end(), v1[i]), v3.end());
+                    //v4.erase(std::remove(v4.begin(), v4.end(), v1[i]), v4.end());
+                }*/
+
+                if (norme(m2-v2[i])<2.)
+                {
+                    msgCenter2.x=v2[i][0];
+                    msgCenter2.y=v2[i][1];
+                    msgCenter2.z=2.0;
+                    pub_valid2.publish(msgCenter2);
+                    //v1.erase(std::remove(v1.begin(), v1.end(), v1[i]), v1.end());
+                    v2.erase(std::remove(v2.begin(), v2.end(), v2[i]), v2.end());
+                    //v3.erase(std::remove(v3.begin(), v3.end(), v1[i]), v3.end());
+                    //v4.erase(std::remove(v4.begin(), v4.end(), v1[i]), v4.end());
+                }
+
+                /*if (norme(m3-v2[i])<2.)
+                {
+                    ROS_INFO("valider x=%f, y=%f", v2[i][0], v2[i][1]);
+                    msgCenter3.x=v2[i][0];
+                    msgCenter3.y=v2[i][1];
+                    msgCenter3.z=3.0;
+                    pub_valid3.publish(msgCenter3);
+                    //v1.erase(std::remove(v1.begin(), v1.end(), v1[i]), v1.end());
+                    v2.erase(std::remove(v2.begin(), v2.end(), v2[i]), v2.end());
+                    //v3.erase(std::remove(v3.begin(), v3.end(), v1[i]), v3.end());
+                    //v4.erase(std::remove(v4.begin(), v4.end(), v1[i]), v4.end());
+                }
+
+                if (norme(m4-v1[i])<1.)
+                {
+                    msgCenter4.x=v1[i][0];
+                    msgCenter4.y=v1[i][1];
+                    msgCenter4.z=4.0;
+                    pub_valid4.publish(msgCenter4);
+                    //v1.erase(std::remove(v1.begin(), v1.end(), v1[i]), v1.end());
+                    //v2.erase(std::remove(v2.begin(), v2.end(), v1[i]), v2.end());
+                    //v3.erase(std::remove(v3.begin(), v3.end(), v1[i]), v3.end());
+                    //v4.erase(std::remove(v4.begin(), v4.end(), v1[i]), v4.end());
+                }
+                */
             }
 
-            if (norme(m3-next_point3)<0.5)
+            /*for (int i=0; i<v2.size(); i++)
             {
-                point_valide.push_back(next_point3);
-                actualposition3=next_point3;
-                v.erase(std::remove(v.begin(), v.end(), next_point3), v.end());
+                if (norme(m1-v2[i])<2.)
+                {
+                    msgCenter1.x=v2[i][0];
+                    msgCenter1.y=v2[i][1];
+                    msgCenter1.z=1.0;                                       
+                    pub_valid1.publish(msgCenter1);
+                    v1.erase(std::remove(v1.begin(), v1.end(), v2[i]), v1.end());
+                    v2.erase(std::remove(v2.begin(), v2.end(), v2[i]), v2.end());
+                    v3.erase(std::remove(v3.begin(), v3.end(), v2[i]), v3.end());
+                    v4.erase(std::remove(v4.begin(), v4.end(), v2[i]), v4.end());
+                }
+
+                if (norme(m2-v2[i])<2.)
+                {
+                    msgCenter2.x=v2[i][0];
+                    msgCenter2.y=v2[i][1];
+                    msgCenter2.z=2.0;
+                    pub_valid2.publish(msgCenter2);
+                    v1.erase(std::remove(v1.begin(), v1.end(), v2[i]), v1.end());
+                    v2.erase(std::remove(v2.begin(), v2.end(), v2[i]), v2.end());
+                    v3.erase(std::remove(v3.begin(), v3.end(), v2[i]), v3.end());
+                    v4.erase(std::remove(v4.begin(), v4.end(), v2[i]), v4.end());
+                }
+
+                if (norme(m3-v2[i])<2.)
+                {
+                    msgCenter3.x=v2[i][0];
+                    msgCenter3.y=v2[i][1];
+                    msgCenter3.z=3.0;
+                    pub_valid3.publish(msgCenter3);
+                    v1.erase(std::remove(v1.begin(), v1.end(), v2[i]), v1.end());
+                    v2.erase(std::remove(v2.begin(), v2.end(), v2[i]), v2.end());
+                    v3.erase(std::remove(v3.begin(), v3.end(), v2[i]), v3.end());
+                    v4.erase(std::remove(v4.begin(), v4.end(), v2[i]), v4.end());
+                }
+
+                if (norme(m4-v2[i])<2.)
+                {
+                    msgCenter4.x=v2[i][0];
+                    msgCenter4.y=v2[i][1];
+                    msgCenter4.z=4.0;
+                    pub_valid4.publish(msgCenter4);
+                    v1.erase(std::remove(v1.begin(), v1.end(), v2[i]), v1.end());
+                    v2.erase(std::remove(v2.begin(), v2.end(), v2[i]), v2.end());
+                    v3.erase(std::remove(v3.begin(), v3.end(), v2[i]), v3.end());
+                    v4.erase(std::remove(v4.begin(), v4.end(), v2[i]), v4.end());
+                }
+                
             }
 
-            if (norme(m4-next_point4)<0.5)
+
+            for (int i=0; i<v3.size(); i++)
             {
-                point_valide.push_back(next_point4);
-                actualposition4=next_point4;
-                v.erase(std::remove(v.begin(), v.end(), next_point4), v.end());
+                if (norme(m1-v3[i])<2.)
+                {
+                    msgCenter1.x=v3[i][0];
+                    msgCenter1.y=v3[i][1];
+                    msgCenter1.z=1.0;                                       
+                    pub_valid1.publish(msgCenter1);
+                    v1.erase(std::remove(v1.begin(), v1.end(), v3[i]), v1.end());
+                    v2.erase(std::remove(v2.begin(), v2.end(), v3[i]), v2.end());
+                    v3.erase(std::remove(v3.begin(), v3.end(), v3[i]), v3.end());
+                    v4.erase(std::remove(v4.begin(), v4.end(), v3[i]), v4.end());
+                }
+
+                if (norme(m2-v3[i])<2.)
+                {
+                    msgCenter2.x=v3[i][0];
+                    msgCenter2.y=v3[i][1];
+                    msgCenter2.z=2.0;
+                    pub_valid2.publish(msgCenter2);
+                    v1.erase(std::remove(v1.begin(), v1.end(), v3[i]), v1.end());
+                    v2.erase(std::remove(v2.begin(), v2.end(), v3[i]), v2.end());
+                    v3.erase(std::remove(v3.begin(), v3.end(), v3[i]), v3.end());
+                    v4.erase(std::remove(v4.begin(), v4.end(), v3[i]), v4.end());
+                }
+
+                if (norme(m3-v3[i])<2.)
+                {
+                    msgCenter3.x=v3[i][0];
+                    msgCenter3.y=v3[i][1];
+                    msgCenter3.z=3.0;
+                    pub_valid3.publish(msgCenter3);
+                    v1.erase(std::remove(v1.begin(), v1.end(), v3[i]), v1.end());
+                    v2.erase(std::remove(v2.begin(), v2.end(), v3[i]), v2.end());
+                    v3.erase(std::remove(v3.begin(), v3.end(), v3[i]), v3.end());
+                    v4.erase(std::remove(v4.begin(), v4.end(), v3[i]), v4.end());
+                }
+
+                if (norme(m4-v3[i])<2.)
+                {
+                    msgCenter4.x=v3[i][0];
+                    msgCenter4.y=v3[i][1];
+                    msgCenter4.z=4.0;
+                    pub_valid4.publish(msgCenter4);
+                    v1.erase(std::remove(v1.begin(), v1.end(), v3[i]), v1.end());
+                    v2.erase(std::remove(v2.begin(), v2.end(), v3[i]), v2.end());
+                    v3.erase(std::remove(v3.begin(), v3.end(), v3[i]), v3.end());
+                    v4.erase(std::remove(v4.begin(), v4.end(), v3[i]), v4.end());
+                }
+                
             }
 
-            //ROS_INFO("angle_sail us=%f", us);
-            publication_command(msg1, ur1, us1);
+            for (int i=0; i<v4.size(); i++)
+            {
+                if (norme(m1-v4[i])<2.)
+                {
+                    msgCenter1.x=v4[i][0];
+                    msgCenter1.y=v4[i][1];
+                    msgCenter1.z=1.0;                                       
+                    pub_valid1.publish(msgCenter1);
+                    v1.erase(std::remove(v1.begin(), v1.end(), v4[i]), v1.end());
+                    v2.erase(std::remove(v2.begin(), v2.end(), v4[i]), v2.end());
+                    v3.erase(std::remove(v3.begin(), v3.end(), v4[i]), v3.end());
+                    v4.erase(std::remove(v4.begin(), v4.end(), v4[i]), v4.end());
+                }
+
+                if (norme(m2-v4[i])<2.)
+                {
+                    msgCenter2.x=v4[i][0];
+                    msgCenter2.y=v4[i][1];
+                    msgCenter2.z=2.0;
+                    pub_valid2.publish(msgCenter2);
+                    v1.erase(std::remove(v1.begin(), v1.end(), v4[i]), v1.end());
+                    v2.erase(std::remove(v2.begin(), v2.end(), v4[i]), v2.end());
+                    v3.erase(std::remove(v3.begin(), v3.end(), v4[i]), v3.end());
+                    v4.erase(std::remove(v4.begin(), v4.end(), v4[i]), v4.end());
+                }
+
+                if (norme(m3-v4[i])<2.)
+                {
+                    msgCenter3.x=v4[i][0];
+                    msgCenter3.y=v4[i][1];
+                    msgCenter3.z=3.0;
+                    pub_valid3.publish(msgCenter3);
+                    v1.erase(std::remove(v1.begin(), v1.end(), v4[i]), v1.end());
+                    v2.erase(std::remove(v2.begin(), v2.end(), v4[i]), v2.end());
+                    v3.erase(std::remove(v3.begin(), v3.end(), v4[i]), v3.end());
+                    v4.erase(std::remove(v4.begin(), v4.end(), v4[i]), v4.end());
+                }
+
+                if (norme(m4-v4[i])<2.)
+                {
+                    msgCenter4.x=v4[i][0];
+                    msgCenter4.y=v4[i][1];
+                    msgCenter4.z=4.0;
+                    pub_valid4.publish(msgCenter4);
+                    v1.erase(std::remove(v1.begin(), v1.end(), v4[i]), v1.end());
+                    v2.erase(std::remove(v2.begin(), v2.end(), v4[i]), v2.end());
+                    v3.erase(std::remove(v3.begin(), v3.end(), v4[i]), v3.end());
+                    v4.erase(std::remove(v4.begin(), v4.end(), v4[i]), v4.end());
+                }
+                
+            }*/
+
+            
+            //nextPointValide.clear();
+
+            //ROS_INFO("ur3=%f us3=%f", ur3, us3);
+            //publication_command(msg1, ur1, us1);
             publication_command(msg2, ur2, us2);
-            publication_command(msg3, ur3, us3);
-            publication_command(msg4, ur4, us4);
-            com_servo1.publish(msg1);
+            /*publication_command(msg3, ur3, us3);
+            publication_command(msg4, ur4, us4);*/
+            //com_servo1.publish(msg1);
             com_servo2.publish(msg2);
-            com_servo3.publish(msg3);
-            com_servo4.publish(msg4);
+            /*com_servo3.publish(msg3);
+            com_servo4.publish(msg4);*/
 
             
         }

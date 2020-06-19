@@ -23,7 +23,7 @@ using namespace std;
 double dt=0.01;// dt is the simulation step 
 double ur1=0, ur2=0,us1=0, us2=0; //the input of the sailboat
 double ur3=0, ur4=0, us3=0, us4=0;
-double a=2; // velocity of the "true" wind
+double a=1; // velocity of the "true" wind
 double psi_w; //the angle of the "true" wind
 double delta_s1=0, delta_s2=M_PI/2;
 double delta_s3=0, delta_s4=M_PI/3;
@@ -32,10 +32,11 @@ double delta_s3=0, delta_s4=M_PI/3;
 double p1=0.05, p2=0.2, p3=6000, p4=1000, p5=2000, p6=1, p7=1, p8=2, p9=300, p10=10000, p11=1; // Vamos
 //double p1=0.1, p2=1,p3=6000, p4=1000, p5=2000,p6=1,p7=1,p8=2,p9=300,p10=10000;
 vector<double> x1={0,0,-M_PI/2,0.0,0.0}; // the state vector of the sailboat
-vector<double> x2={0,0,-M_PI/2,0.0,0.0};
+vector<double> x2={0,0,-M_PI/2,0.5,0.0};
 vector<double> x3={0,0,M_PI/2,0.0,0.0};
 vector<double> x4={0,0,M_PI/2,0,0};
 vector<double> xdot={0.0,0.0,0.0,0.0,0.0};
+vector<double> couleur1={1.0, 0.0, 0.0}, couleur2={0.0, 1.0, 0.0}, couleur3={1.0, 1.0, 0.0}, couleur4={1.0, 1.0, 1.0};
 
 
 double sign(double x)
@@ -88,7 +89,7 @@ void f(double u1, double u2, vector<double> x, vector<double>& xdot, double psi_
 
 
 
-void print_boat(visualization_msgs::Marker& marker, geometry_msgs::TransformStamped& transformStamped, tf2_ros::TransformBroadcaster& br, geometry_msgs::PoseStamped& msgs, string name, vector<double>& x, int i)
+void print_boat(visualization_msgs::Marker& marker, geometry_msgs::TransformStamped& transformStamped, tf2_ros::TransformBroadcaster& br, geometry_msgs::PoseStamped& msgs, string name, vector<double>& x, vector<double> coleur, int i)
 {
     transformStamped.header.frame_id = "map";
     transformStamped.child_frame_id = name;
@@ -117,9 +118,9 @@ void print_boat(visualization_msgs::Marker& marker, geometry_msgs::TransformStam
     marker.scale.y = 0.0004;
     marker.scale.z = 0.0004;
     marker.color.a = 1.0;
-    marker.color.r = 1.0;
-    marker.color.g = 1.0;
-    marker.color.b = 1.0;
+    marker.color.r = coleur[0];
+    marker.color.g = coleur[1];
+    marker.color.b = coleur[2];
     marker.mesh_resource = "package://sailboat/meshs/boat.STL";
 }
 
@@ -279,7 +280,7 @@ int main(int argc, char **argv)
     n.param<double>("boatx4", x4[0], 0);
     n.param<double>("boaty4", x4[1], 0);
     n.param<double>("psi_wind", psi_w, 0);
-    ros::Rate loop_rate(300);
+    ros::Rate loop_rate(100);
     while (ros::ok()) {
         
 
@@ -326,25 +327,25 @@ int main(int argc, char **argv)
         tf::quaternionTFToMsg(q_cap, msg_cap4);
         cap4.publish(msg_cap4);
 
-        print_boat(marker_boat, transformStamped_boat, br_boat, msgs_boat, "boat1", x1, 0);
+        print_boat(marker_boat, transformStamped_boat, br_boat, msgs_boat, "boat1", x1, couleur1, 0);
         print_sail(marker_sail, transformStamped_sail, br_sail, msgs_sail, "boat1", "sail1", delta_s1, 0);
         print_rudder(marker_rudder, transformStamped_rudder, br_rudder, msgs_rudder,"boat1", "rudder1", ur1, 0);
         boat_pub.publish( marker_boat );
         sail_pub.publish( marker_sail );
         rudder_pub.publish( marker_rudder );
-        print_boat(marker_boat, transformStamped_boat, br_boat, msgs_boat, "boat2", x2, 0);
+        print_boat(marker_boat, transformStamped_boat, br_boat, msgs_boat, "boat2", x2, couleur2, 0);
         print_sail(marker_sail, transformStamped_sail, br_sail, msgs_sail, "boat2", "sail2", delta_s2, 0);
         print_rudder(marker_rudder, transformStamped_rudder, br_rudder, msgs_rudder, "boat2", "rudder2", ur2, 0);
         sail_pub.publish( marker_sail );
         rudder_pub.publish( marker_rudder );
         boat_pub.publish( marker_boat );
-        print_boat(marker_boat, transformStamped_boat, br_boat, msgs_boat, "boat3", x3, 0);
+        print_boat(marker_boat, transformStamped_boat, br_boat, msgs_boat, "boat3", x3, couleur3, 0);
         print_sail(marker_sail, transformStamped_sail, br_sail, msgs_sail, "boat3", "sail3",delta_s3, 0);
         print_rudder(marker_rudder, transformStamped_rudder, br_rudder, msgs_rudder, "boat3" ,"rudder3", ur3, 0);
         sail_pub.publish( marker_sail );
         rudder_pub.publish( marker_rudder );
         boat_pub.publish( marker_boat );
-        print_boat(marker_boat, transformStamped_boat, br_boat, msgs_boat, "boat4", x4, 0);
+        print_boat(marker_boat, transformStamped_boat, br_boat, msgs_boat, "boat4", x4, couleur4, 0);
         print_sail(marker_sail, transformStamped_sail, br_sail, msgs_sail, "boat4", "sail4", delta_s4, 0);
         print_rudder(marker_rudder, transformStamped_rudder, br_rudder, msgs_rudder, "boat4", "rudder4", ur4, 0);
         boat_pub.publish( marker_boat );
