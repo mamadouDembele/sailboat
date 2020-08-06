@@ -105,7 +105,7 @@ class Boatareascan():
     def get_rewards(self, PointValideByOtherBoat, act):
         self.reward=0
         if (cos(self.psi_wind-self.theta[act])+cos(zeta))<0:
-            self.reward=-1.5
+            self.reward=-2.0
             return
         verif=False
         for L in PointValideByOtherBoat:
@@ -113,53 +113,53 @@ class Boatareascan():
                 verif=True
         if not verif:
             if abs(abs(self.orientation-self.theta[act])-0.0)<=0.01:
-                self.reward=1.0
+                self.reward=2.0
 
             if abs(abs(self.orientation-self.theta[act])-0.78)<=0.01:
-                self.reward=0.5
+                self.reward=1.0
 
             if abs(abs(self.orientation-self.theta[act])-1.57)<=0.01:
-                self.reward=0.25
+                self.reward=0.5
 
             if abs(abs(self.orientation-self.theta[act])-2.35)<=0.01:
-                self.reward=0.125
-
-            if abs(abs(self.orientation-self.theta[act])-3.14)<=0.01:
-                self.reward=0.0625
-
-            if abs(abs(self.orientation-self.theta[act])-3.92)<=0.01:
-                self.reward=0.125
-
-            if abs(abs(self.orientation-self.theta[act])-4.71)<=0.01:
                 self.reward=0.25
 
-            if abs(abs(self.orientation-self.theta[act])-5.50)<=0.01:
+            if abs(abs(self.orientation-self.theta[act])-3.14)<=0.01:
+                self.reward=0.125
+
+            if abs(abs(self.orientation-self.theta[act])-3.92)<=0.01:
+                self.reward=0.25
+
+            if abs(abs(self.orientation-self.theta[act])-4.71)<=0.01:
                 self.reward=0.5
+
+            if abs(abs(self.orientation-self.theta[act])-5.50)<=0.01:
+                self.reward=1.0
 
         else:
             if abs(abs(self.orientation-self.theta[act])-0.0)<=0:
-                self.reward=log(1.0)/4
+                self.reward=log(0.8)/3
 
             if abs(abs(self.orientation-self.theta[act])-0.78)<=0.01:
-                self.reward=log(0.5)/4
+                self.reward=log(0.4)/3
 
             if abs(abs(self.orientation-self.theta[act])-1.57)<=0.01:
-                self.reward=log(0.25)/4
+                self.reward=log(0.25)/3
 
             if abs(abs(self.orientation-self.theta[act])-2.35)<=0.01:
-                self.reward=log(0.125)/4
+                self.reward=log(0.125)/3
 
             if abs(abs(self.orientation-self.theta[act])-3.14)<=0.01:
-                self.reward=log(0.0625)/4
+                self.reward=log(0.0625)/3
 
             if abs(abs(self.orientation-self.theta[act])-3.92)<=0.01:
-                self.reward=log(0.125)/4
+                self.reward=log(0.125)/3
 
             if abs(abs(self.orientation-self.theta[act])-4.71)<=0.01:
-                self.reward=log(0.25)/4
+                self.reward=log(0.25)/3
 
             if abs(abs(self.orientation-self.theta[act])-5.50)<=0.01:
-                self.reward=log(0.5)/4
+                self.reward=log(0.4)/3
             
         return
 
@@ -181,7 +181,7 @@ class Boatareascan():
         previous=(self.state[0], self.state[1])
         self.state=(self.next_state[0], self.next_state[1])
         act2=self.take_action(0.0)
-        self.Q_table[previous][act1]=self.Q_table[previous][act1] + 0.1*(self.reward + 1.0*(self.Q_table[self.state][act2]-self.Q_table[previous][act1]))
+        self.Q_table[previous][act1]=self.Q_table[previous][act1] + 0.1*(self.reward + 0.99*self.Q_table[self.state][act2]-self.Q_table[previous][act1])
 
 
 def arrInList(L, arr):
@@ -317,25 +317,25 @@ def main():
             ur3, us3=point_attract(m3, theta3, psi_w, a3)
             ur4, us4=point_attract(m4, theta4, psi_w, a4)
 
-            if norme(m1-a1)<1.:
+            if norme(m1-a1)<2.:
                 boat1.state=boat1.next_state
                 msgCenter1.x=a1[0]
                 msgCenter1.y=a1[1]
                 msgCenter1.z=1.0
                 pub_valid1.publish(msgCenter1)
-            if norme(m2-a2)<1.:
+            if norme(m2-a2)<2.:
                 boat2.state=boat2.next_state
                 msgCenter2.x=a2[0]
                 msgCenter2.y=a2[1]
                 msgCenter2.z=2.0
                 pub_valid2.publish(msgCenter2)
-            if norme(m3-a3)<1.:
+            if norme(m3-a3)<2.:
                 boat3.state=boat3.next_state
                 msgCenter3.x=a3[0]
                 msgCenter3.y=a3[1]
                 msgCenter3.z=3.0
                 pub_valid3.publish(msgCenter3)
-            if norme(m4-a4)<1.:
+            if norme(m4-a4)<2.:
                 boat4.state=boat4.next_state
                 msgCenter4.x=a4[0]
                 msgCenter4.y=a4[1]
@@ -369,16 +369,16 @@ if __name__ == '__main__':
     if trainable:
         eps=1.0
         M=[boat1.myPointValide, boat2.myPointValide, boat3.myPointValide, boat4.myPointValide]
-        for _ in range(10000):
+        for _ in range(100000):
             step=0
-            while step<410:
+            while step<500:
                 boat1.train(eps, M)
                 boat2.train(eps, M)
                 boat3.train(eps, M)
                 boat4.train(eps, M)
                 step+=1   
 
-            eps=max(0.1, eps*0.996)
+            eps=max(0.1, eps*0.9996)
             boat1.reset()
             boat2.reset()
             boat3.reset()

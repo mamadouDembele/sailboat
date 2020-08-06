@@ -86,11 +86,38 @@ Four boats will be deployed for this task. Every boat is to scan an area as soon
 <div id="centre">
 <div align="center"><h3>Area scanning</h3></div>
 
-<h2> Hide and Seek </h2>
-This challenge is a mission between two sailing ships. Each boat has to sail between two circles of 5m radius that have been associated with it, this is the "hide" part. The other part called "seek" consists in detecting an AprilTag of its partner.
-<div id="centre">
-<div align="center"><img src="figure/mission4.png" alt="mission4"  width="550" height="340" /></div>
+
+
+<h2>Reinforcement learning and Area scanning</h2>
+
+After developing deterministic algorithms to solve the area scanning problem, I developed artificial intelligence algorithms (more precisely reinforcement learning algorithms) to solve the same problem.
+
+Reinforcement learning is one of the three paradigms of machine learning, along with supervised and unsupervised learning.
+an agent (robot, etc.) is placed in an environment, takes guesses according to its current state and receives from the environment the next state and a reward (positive or negative).
+The objective of the agent in the reinforcement learning phase is then to seek a behaviour capable of accumulating the maximum of these rewards.
 
 <div id="centre">
-<div align="center"><h3>Hide and seek</h3></div>
+<div align="center"><img src="figure/reinforcement_learning.jpg" alt="mission3"  width="550" height="340" /></div>
+
+<div id="centre">
+<div align="center"><h3>Interaction loop between the agent and its environment</h3></div>
+
+
+
+<h3>Q-learning</h3>
+
+Q-learning is a model-free reinforcement learning algorithm. It is an algorithm that estimates the optimal policy (which indicates what action to take in each state of the system) without using an initial model of the environment. Such an algorithm uses a state-action value function Q that measures the quality of an action in a state.
+This Q function is defined using the Bellman equation:
+
+
+div id="centre">
+<div align="center"><img src="figure/bellman_eq.png" alt="mission3"  width="1050" height="340" /></div>
+
+<div id="centre">
+<div align="center"><h3>Bellman Equation</h3></div>
+
+At each Step of learning, this equation used to update the values of the Q-table.
+
+<h3>Deep Q-learning</h3>
+
 
