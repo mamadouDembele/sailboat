@@ -32,7 +32,7 @@ double delta_s3=0, delta_s4=M_PI/3;
 double p1=0.05, p2=0.2, p3=6000, p4=1000, p5=2000, p6=1, p7=1, p8=2, p9=300, p10=10000, p11=1; // Vamos
 //double p1=0.1, p2=1,p3=6000, p4=1000, p5=2000,p6=1,p7=1,p8=2,p9=300,p10=10000;
 vector<double> x1={0,0,-M_PI/2,0.0,0.0}; // the state vector of the sailboat
-vector<double> x2={0,0,-M_PI/2,0.5,0.0};
+vector<double> x2={0,0,-M_PI/2,0.0,0.0};
 vector<double> x3={0,0,M_PI/2,0.0,0.0};
 vector<double> x4={0,0,M_PI/2,0,0};
 vector<double> xdot={0.0,0.0,0.0,0.0,0.0};

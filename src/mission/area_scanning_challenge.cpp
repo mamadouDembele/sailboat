@@ -26,7 +26,7 @@ double Gamma=M_PI/4; // Constance pour rendre la ligne plus attractive
 tf::Quaternion q_sail1, q_sail2, q_sail3, q_sail4, q_wind;
 int i1=0, i2=0, i3=0, i4=0;
 Eigen::Vector2d actualposition1={-47.5, 67.5}, actualposition2={47.5, 67.5}, actualposition3={-47.5, -67.5}, actualposition4={47.5,-67.5};
-//vector<Eigen::Vector2d> next_point1, next_point2, next_point3, next_point4;
+Eigen::Vector2d a={-27.5,-47.5}, b={37.5,47.5};
 Eigen::Vector2d actpos1={-47.5, 67.5}, actpos2={47.5, 67.5}, actpos3={-47.5, -67.5},  actpos4={47.5,-67.5};
 vector<Eigen::Vector2d> v1, v2, v3, v4, nextPointValide, actPointValide;
 
@@ -85,12 +85,13 @@ void controler_line(Eigen::Vector2d m, double theta, double psi_w, Eigen::Vector
 
 }
 
-void point_attract(Eigen::Vector2d m, Eigen::Vector2d qr1, Eigen::Vector2d qr2, Eigen::Vector2d qr3, double theta, double psi_w, Eigen::Vector2d a, double& ur, double& us)
+void point_attract(Eigen::Vector2d m, double theta, double psi_w, Eigen::Vector2d a, double& ur, double& us)
 {
-    Eigen::Vector2d vect=-2*(m-a) + 0*(m-qr1)/pow(norme(m-qr1),3) + 2*(m-qr2)/pow(norme(m-qr2),3) + 0*(m-qr3)/pow(norme(m-qr3),3);
+    Eigen::Vector2d vect=-2*(m-a);
     double theta_bar=angle(vect);
 
-    double zeta=M_PI/10;
+    ROS_INFO("diff=%f", theta_bar);
+    //double zeta=M_PI/10;
 
     //if ((cos(psi_w-theta_bar)+cos(zeta))<0)
         //theta_bar=M_PI+psi_w - zeta;
@@ -306,15 +307,15 @@ int main(int argc, char **argv)
         else{
             
             //Eigen::Vector2d nextpoint1=best_near_point_vert(actpos1, v1);
-            Eigen::Vector2d nextpoint2=best_near_point_hori(actpos2, v1);
+            //Eigen::Vector2d nextpoint2=best_near_point_vert(actpos2, v1);
            
             //Eigen::Vector2d nextpoint3=best_near_point_vert(actpos3, v1);
             //Eigen::Vector2d nextpoint4=best_near_point_hori(actpos4, v1);
             //controler_line(m1, theta1, psi_w, actpos1, nextpoint1, ur1, us1, q1);
-            controler_line(m2, theta2, psi_w, actpos2, nextpoint2, ur2, us2, q2);
+            //controler_line(m2, theta2, psi_w, actpos2, nextpoint2, ur2, us2, q2);
             //controler_line(m3, theta3, psi_w, actpos3, nextpoint3, ur3, us3, q3);
             //controler_line(m4, theta4, psi_w, actpos4, nextpoint4, ur4, us4, q4);
-            //point_attract(m1, m2, m3, m4, theta1, psi_w, nextpoint1, ur1, us1);
+            point_attract(m3, theta3, psi_w, a, ur3, us3);
             //point_attract(m2, m1, m3, m4, theta2, psi_w, nextpoint2, ur2, us2);
             //point_attract(m3, m2, m1, m4, theta3, psi_w, nextpoint3, ur3, us3);
             //point_attract(m4, m2, m3, m1, theta4, psi_w, nextpoint4, ur4, us4);
@@ -331,7 +332,13 @@ int main(int argc, char **argv)
 
             }*/
 
-            if (scalaire_prod(nextpoint2-actpos2, nextpoint2-m2)<0)
+            if (norme(m3-a)<0.5)
+            {
+                ROS_INFO("valider");
+                a=b;
+            }
+
+            /*if (scalaire_prod(nextpoint2-actpos2, nextpoint2-m2)<0)
             {
                 actpos2=nextpoint2;
                 v1.erase(std::remove(v1.begin(), v1.end(), nextpoint2), v1.end());
@@ -339,8 +346,8 @@ int main(int argc, char **argv)
                 {
                     ROS_INFO("zap2");
                     nextPointValide.push_back(nextpoint2);
-                }*/
-            }
+                }
+            }*/
             
             /*if (scalaire_prod(nextpoint3-actpos3, nextpoint3-m3)<0)
             {
@@ -582,13 +589,13 @@ int main(int argc, char **argv)
 
             //ROS_INFO("ur3=%f us3=%f", ur3, us3);
             //publication_command(msg1, ur1, us1);
-            publication_command(msg2, ur2, us2);
-            /*publication_command(msg3, ur3, us3);
-            publication_command(msg4, ur4, us4);*/
+            //publication_command(msg2, ur2, us2);
+            publication_command(msg3, ur3, us3);
+            //publication_command(msg4, ur4, us4);
             //com_servo1.publish(msg1);
-            com_servo2.publish(msg2);
-            /*com_servo3.publish(msg3);
-            com_servo4.publish(msg4);*/
+            //com_servo2.publish(msg2);
+            com_servo3.publish(msg3);
+            //com_servo4.publish(msg4);
 
             
         }

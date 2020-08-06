@@ -166,6 +166,7 @@ add_executable(challenge2_figure src/mission/challenge2_figure.cpp)
 add_executable(area_scanning_figure src/mission/area_scanning_figure.cpp)
 add_executable(boats_area_scanning src/mission/boats_area_scanning.cpp)
 add_executable(area_scanning_challenge src/mission/area_scanning_challenge.cpp)
+#add_executable(qtable /src/mission/qtable)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -206,6 +207,7 @@ target_link_libraries(challenge2_figure ${catkin_LIBRARIES})
 target_link_libraries(area_scanning_figure ${catkin_LIBRARIES})
 target_link_libraries(boats_area_scanning ${catkin_LIBRARIES})
 target_link_libraries(area_scanning_challenge ${catkin_LIBRARIES})
+#target_link_libraries(qtable ${catkin_LIBRARIES})
 
 
 #############
@@ -246,11 +248,11 @@ target_link_libraries(area_scanning_challenge ${catkin_LIBRARIES})
 #)
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
-# install(FILES
-#   # myfile1
+#install(FILES
+#	qtable
 #   # myfile2
 #   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-# )
+#)
 
 #############
 ## Testing ##
