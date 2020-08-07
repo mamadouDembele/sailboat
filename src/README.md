@@ -110,7 +110,7 @@ Q-learning is a model-free reinforcement learning algorithm. It is an algorithm 
 This Q function is defined using the Bellman equation:
 
 
-div id="centre">
+<div id="centre">
 <div align="center"><img src="figure/bellman_eq.png" alt="mission3"  width="1050" height="340" /></div>
 
 <div id="centre">
