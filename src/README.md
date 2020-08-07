@@ -118,11 +118,11 @@ This Q function is defined using the Bellman equation:
 
 At each Step of learning, this equation used to update the values of the Q-table.
 
-A file called qlearning.py implements the Q-learning algorithm. In order to use it, the agent would first have to be trained. On line 362, set trainable to True (trainable=True). Then simply launch the python file using the console (>> python qlearning.py). The training will take some time.
+A file called qlearning.py implements the Q-learning algorithm. In order to use it, the agent would first have to be trained. On line 362, set trainable to True (**trainable=True**). Then simply launch the python file using the console (**>> python qlearning.py**). The training will take some time.
 At the end of the training a qtable file is generated in the current directory. 
-In order to test the Q-learning algorithm, set trainable to False (trainable=False), move the generated qtable file to ~/workspaceRos/devel/lib/sailboat
+In order to test the Q-learning algorithm, set trainable to False (**trainable=False**), move the generated qtable file to ***~/workspaceRos/devel/lib/sailboat***
 
-Finally launch the challenge3.launch file using roslaunch challenge3.launch 
+Finally launch the challenge3.launch file using ***roslaunch challenge3.launch ***
 
 <h3>Deep Q-learning</h3>
 
