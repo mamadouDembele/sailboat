@@ -122,7 +122,7 @@ A file called qlearning.py implements the Q-learning algorithm. In order to use 
 At the end of the training a qtable file is generated in the current directory. 
 In order to test the Q-learning algorithm, set trainable to False (**trainable=False**), move the generated qtable file to ***~/workspaceRos/devel/lib/sailboat***
 
-Finally launch the challenge3.launch file using ***roslaunch challenge3.launch ***
+Finally launch the challenge3.launch file using ***roslaunch challenge3.launch***
 
 <h3>Deep Q-learning</h3>
 
