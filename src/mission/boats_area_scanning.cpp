@@ -23,7 +23,7 @@ using namespace std;
 double dt=0.01;// dt is the simulation step 
 double ur1=0, ur2=0,us1=0, us2=0; //the input of the sailboat
 double ur3=0, ur4=0, us3=0, us4=0;
-double a=1; // velocity of the "true" wind
+double a=2.0; // velocity of the "true" wind
 double psi_w; //the angle of the "true" wind
 double delta_s1=0, delta_s2=M_PI/2;
 double delta_s3=0, delta_s4=M_PI/3;

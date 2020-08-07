@@ -17,15 +17,13 @@ class Boatareascan():
     """
         Boat
     """
-    def __init__(self, posx, posy, prevPos, initOri, psi_w):
+    def __init__(self, posx, posy, initOri, psi_w):
         self.state=(posx, posy)
         self.next_state=(0.0, 0.0)
-        self.prev_state=prevPos
         self.orientation=initOri
         self.psi_wind=psi_w
         self.reward=0
         self.initState=(posx, posy)
-        self.initPrev=prevPos
         self.theta=[0, 0.78, 1.57, 2.35, 3.14, 3.92, 4.71, 5.50]
         self.Q_table={}
         for j in range(20):
@@ -34,6 +32,7 @@ class Boatareascan():
                 self.Q_table[c]=np.zeros(8)
 
         self.myPointValide=[]
+        self.orient=initOri
 
 
     def reset(self):
@@ -41,8 +40,8 @@ class Boatareascan():
             Reset
         """
         self.state=(self.initState[0], self.initState[1])
-        self.prev_state=(self.initPrev[0], self.initPrev[1])
         self.myPointValide[:]=[]
+        self.orientation=self.orient
 
 
     """def take_action(self, eps):
@@ -105,7 +104,7 @@ class Boatareascan():
     def get_rewards(self, PointValideByOtherBoat, act):
         self.reward=0
         if (cos(self.psi_wind-self.theta[act])+cos(zeta))<0:
-            self.reward=-2.0
+            self.reward=-2.5
             return
         verif=False
         for L in PointValideByOtherBoat:
@@ -116,50 +115,50 @@ class Boatareascan():
                 self.reward=2.0
 
             if abs(abs(self.orientation-self.theta[act])-0.78)<=0.01:
-                self.reward=1.0
+                self.reward=1.5
 
             if abs(abs(self.orientation-self.theta[act])-1.57)<=0.01:
-                self.reward=0.5
+                self.reward=1.0
 
             if abs(abs(self.orientation-self.theta[act])-2.35)<=0.01:
-                self.reward=0.25
+                self.reward=0.75
 
             if abs(abs(self.orientation-self.theta[act])-3.14)<=0.01:
-                self.reward=0.125
-
-            if abs(abs(self.orientation-self.theta[act])-3.92)<=0.01:
-                self.reward=0.25
-
-            if abs(abs(self.orientation-self.theta[act])-4.71)<=0.01:
                 self.reward=0.5
 
-            if abs(abs(self.orientation-self.theta[act])-5.50)<=0.01:
+            if abs(abs(self.orientation-self.theta[act])-3.92)<=0.01:
+                self.reward=0.75
+
+            if abs(abs(self.orientation-self.theta[act])-4.71)<=0.01:
                 self.reward=1.0
+
+            if abs(abs(self.orientation-self.theta[act])-5.50)<=0.01:
+                self.reward=1.5
 
         else:
             if abs(abs(self.orientation-self.theta[act])-0.0)<=0:
-                self.reward=log(0.8)/3
+                self.reward=-1.1
 
             if abs(abs(self.orientation-self.theta[act])-0.78)<=0.01:
-                self.reward=log(0.4)/3
+                self.reward=-1.2
 
             if abs(abs(self.orientation-self.theta[act])-1.57)<=0.01:
-                self.reward=log(0.25)/3
+                self.reward=-1.3
 
             if abs(abs(self.orientation-self.theta[act])-2.35)<=0.01:
-                self.reward=log(0.125)/3
+                self.reward=-1.4
 
             if abs(abs(self.orientation-self.theta[act])-3.14)<=0.01:
-                self.reward=log(0.0625)/3
+                self.reward=-1.6
 
             if abs(abs(self.orientation-self.theta[act])-3.92)<=0.01:
-                self.reward=log(0.125)/3
+                self.reward=-1.4
 
             if abs(abs(self.orientation-self.theta[act])-4.71)<=0.01:
-                self.reward=log(0.25)/3
+                self.reward=-1.3
 
             if abs(abs(self.orientation-self.theta[act])-5.50)<=0.01:
-                self.reward=log(0.4)/3
+                self.reward=-1.2
             
         return
 
@@ -361,15 +360,15 @@ if __name__ == '__main__':
     zeta=pi/4
     urmax=pi/4
     trainable=True
-    boat1=Boatareascan(-47.5, 47.5, (-47.5, 52.5), -1.57, 0.0)
-    boat2=Boatareascan(47.5, 47.5, (47.5, 52.5), -1.57, 0.0)
-    boat3=Boatareascan(-47.5, -47.5, (-47.5, -52.5), 1.57, 0.0)
-    boat4=Boatareascan(47.5, -47.5, (47.5, -52.5), 1.57, 0.0)
+    boat1=Boatareascan(-47.5, 47.5, -1.57, 0.0)
+    boat2=Boatareascan(47.5, 47.5, -1.57, 0.0)
+    boat3=Boatareascan(-47.5, -47.5, 1.57, 0.0)
+    boat4=Boatareascan(47.5, -47.5, 1.57, 0.0)
 
     if trainable:
         eps=1.0
         M=[boat1.myPointValide, boat2.myPointValide, boat3.myPointValide, boat4.myPointValide]
-        for _ in range(100000):
+        for _ in range(10000):
             step=0
             while step<500:
                 boat1.train(eps, M)
