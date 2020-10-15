@@ -3,19 +3,19 @@
 	<node name="node_draw_waypoint" pkg="sailboat" type="drawwaypoint" />
 	
 	<param name="boatx1" type="double" value="-47.5" />
-	<param name="boaty1" type="double" value="47.5" />
+	<param name="boaty1" type="double" value="67.5" />
 	<param name="boatx2" type="double" value="47.5" />
-	<param name="boaty2" type="double" value="47.5" />
+	<param name="boaty2" type="double" value="67.5" />
 	<param name="boatx3" type="double" value="-47.5" />
-	<param name="boaty3" type="double" value="-47.5" />
+	<param name="boaty3" type="double" value="-67.5" />
 	<param name="boatx4" type="double" value="47.5" />
-	<param name="boaty4" type="double" value="-47.5" />
-	<param name="psi_wind" type="double" value="0.0" />
+	<param name="boaty4" type="double" value="-67.5" />
+	<param name="psi_wind" type="double" value="0.78" />
 	
 
-	<!--<node name="node_area_scanning" pkg="sailboat" type="area_scanning_challenge" output="screen" />-->
-	<node name="node_renf_learn" pkg="sailboat" type="qlearning.py" output="screen" />
-<node name="node_area_scanning_figure" pkg="sailboat" type="area_scanning_figure" output="screen" />
+	<node name="node_area_scanning" pkg="sailboat" type="area_scanning_challenge" output="screen" />
+	<!--<node name="node_renf_learn" pkg="sailboat" type="qlearning.py" output="screen" />-->
+	<node name="node_area_scanning_figure" pkg="sailboat" type="area_scanning_figure" output="screen" />
 
 	
 </launch>

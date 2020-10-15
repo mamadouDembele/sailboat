@@ -11,12 +11,13 @@ from geometry_msgs.msg import Point
 from geometry_msgs.msg import Quaternion
 from tf.transformations import euler_from_quaternion
 import pickle 
-#import sys
 
 class Boatareascan():
     """
         Boat
     """
+    nbAreaScan=0
+    step=False
     def __init__(self, posx, posy, initOri, psi_w):
         self.state=(posx, posy)
         self.next_state=(0.0, 0.0)
@@ -28,11 +29,16 @@ class Boatareascan():
         self.Q_table={}
         for j in range(20):
             for i in range(20):
-                c=(-50.0+i*5.0+5.0/2.0, 50.0-j*5.0-5.0/2.0);
+                c=(-50.0+i*5.0+5.0/2.0, 50.0-j*5.0-5.0/2.0)
                 self.Q_table[c]=np.zeros(8)
 
         self.myPointValide=[]
         self.orient=initOri
+        self.negat_reward=0
+        #self.boxScan1=0
+        #self.boxScan2=0
+        #self.boxScan3=0
+        Boatareascan.nbAreaScan+=1
 
 
     def reset(self):
@@ -42,34 +48,34 @@ class Boatareascan():
         self.state=(self.initState[0], self.initState[1])
         self.myPointValide[:]=[]
         self.orientation=self.orient
+        #self.boxScan1=0
+        #self.boxScan2=0
+        #self.boxScan3=0
+        Boatareascan.nbAreaScan+=1
+        Boatareascan.step=False
+        self.reward=0
+        self.negat_reward=0
 
 
-    """def take_action(self, eps):
-        self.state
+    def take_action(self, eps):
         act_possible=[x for x in range(8)]
-        theta=[0, 0.78, 1.57, 2.35, 3.14, 3.92, 4.71, 5.50]
+        Direct_no_poss=[]
         for i in range(8):
-            if (cos(self.psi_wind-theta[i])+cos(zeta))<0:
+            if cos(self.orientation-self.theta[i])<0: 
                 act_possible.remove(i)
+                Direct_no_poss.append(i)
         if random.uniform(0, 1)<eps:
             act=random.choice(act_possible)
             return act
         else:
-            act=np.argmax(self.Q_table[self.state])
-            return act"""
-
-    def take_action(self, eps):
-        if random.uniform(0, 1)<eps:
-            act=randint(0,7)
-        else:
-            act=np.argmax(self.Q_table[self.state])
-        return act
+            L=copy.deepcopy(self.Q_table[self.state])
+            for i in Direct_no_poss:
+                np.delete(L, i)
+            act=np.argmax(L)
+            return act
 
     def getState(self, act):
 
-        if (cos(self.psi_wind-self.theta[act])+cos(zeta))<0:
-            self.next_state=(self.state[0], self.state[1])
-            return 
         if act==0:
             new_point=(self.state[0]+5.0, self.state[1])
             
@@ -102,65 +108,96 @@ class Boatareascan():
 
 
     def get_rewards(self, PointValideByOtherBoat, act):
+        #self.reward=0
+        reward=0
         self.reward=0
-        if (cos(self.psi_wind-self.theta[act])+cos(zeta))<0:
-            self.reward=-2.5
-            return
+        self.negat_reward=0
         verif=False
+        if (cos(self.psi_wind-self.theta[act])+cos(zeta))<0:
+            self.reward+=-5.0
+            self.negat_reward+=-5.0
         for L in PointValideByOtherBoat:
-            if arrInList(L, self.next_state):
+            if arrInList(self.myPointValide, self.next_state):
                 verif=True
-        if not verif:
-            if abs(abs(self.orientation-self.theta[act])-0.0)<=0.01:
-                self.reward=2.0
 
-            if abs(abs(self.orientation-self.theta[act])-0.78)<=0.01:
-                self.reward=1.5
+        if (cos(self.psi_wind-self.theta[act])+cos(zeta))<0:
+            self.reward=-1.0
+            self.negat_reward=-1.0
 
-            if abs(abs(self.orientation-self.theta[act])-1.57)<=0.01:
-                self.reward=1.0
 
-            if abs(abs(self.orientation-self.theta[act])-2.35)<=0.01:
-                self.reward=0.75
-
-            if abs(abs(self.orientation-self.theta[act])-3.14)<=0.01:
-                self.reward=0.5
-
-            if abs(abs(self.orientation-self.theta[act])-3.92)<=0.01:
-                self.reward=0.75
-
-            if abs(abs(self.orientation-self.theta[act])-4.71)<=0.01:
-                self.reward=1.0
-
-            if abs(abs(self.orientation-self.theta[act])-5.50)<=0.01:
-                self.reward=1.5
-
-        else:
-            if abs(abs(self.orientation-self.theta[act])-0.0)<=0:
-                self.reward=-1.1
-
-            if abs(abs(self.orientation-self.theta[act])-0.78)<=0.01:
-                self.reward=-1.2
-
-            if abs(abs(self.orientation-self.theta[act])-1.57)<=0.01:
-                self.reward=-1.3
-
-            if abs(abs(self.orientation-self.theta[act])-2.35)<=0.01:
-                self.reward=-1.4
-
-            if abs(abs(self.orientation-self.theta[act])-3.14)<=0.01:
-                self.reward=-1.6
-
-            if abs(abs(self.orientation-self.theta[act])-3.92)<=0.01:
-                self.reward=-1.4
-
-            if abs(abs(self.orientation-self.theta[act])-4.71)<=0.01:
-                self.reward=-1.3
-
-            if abs(abs(self.orientation-self.theta[act])-5.50)<=0.01:
-                self.reward=-1.2
+        if verif==False:
+            Boatareascan.nbAreaScan+=1
+            self.reward+=15.0
+            # #self.boxScan1+=1
             
-        return
+            if abs(abs(self.orientation-self.theta[act])-0.0)<=0.01:
+                #print("I win 2.0")
+                self.reward+=5.0
+
+            if abs(abs(self.orientation-self.theta[act])-0.78)<=0.01:
+                #print("I win 1.5")
+                self.reward+=1.0
+
+            if abs(abs(self.orientation-self.theta[act])-1.57)<=0.01:
+                #print("I win 1.0")
+                self.reward+=0.0
+
+            if abs(abs(self.orientation-self.theta[act])-2.35)<=0.01:
+                #print("I win 0.75")
+                self.reward+=-2.0
+
+            if abs(abs(self.orientation-self.theta[act])-3.14)<=0.01:
+                #print("I win 0.5")
+                self.reward+=-6.0
+
+            if abs(abs(self.orientation-self.theta[act])-3.92)<=0.01:
+                #print("I win 0.75")
+                self.reward+=-2.0
+
+            if abs(abs(self.orientation-self.theta[act])-4.71)<=0.01:
+                #print("I win 1.0")
+                self.reward+=0.0
+
+            if abs(abs(self.orientation-self.theta[act])-5.50)<=0.01:
+                #print("I win 1.5")
+                self.reward+=1.0
+            reward=self.reward
+            #print("I get reward=", reward)
+        else:
+            self.negat_reward+=-20
+            if abs(abs(self.orientation-self.theta[act])-0.0)<=0:
+                #print("I lose")
+                self.negat_reward+=log(0.8)
+
+            if abs(abs(self.orientation-self.theta[act])-0.78)<=0.01:
+                #print("I lose")
+                self.negat_reward+=log(0.5)
+
+            if abs(abs(self.orientation-self.theta[act])-1.57)<=0.01:
+                #print("I lose")
+                self.negat_reward+=log(0.25)
+
+            if abs(abs(self.orientation-self.theta[act])-2.35)<=0.01:
+                #print("I lose")
+                self.negat_reward+=log(0.125)
+
+            if abs(abs(self.orientation-self.theta[act])-3.14)<=0.01:
+                #print("I lose")
+                self.negat_reward+=log(0.0625)
+
+            if abs(abs(self.orientation-self.theta[act])-3.92)<=0.01:
+                #print("I lose")
+                self.negat_reward+=log(0.125)
+
+            if abs(abs(self.orientation-self.theta[act])-4.71)<=0.01:
+                #print("I lose")
+                self.negat_reward+=log(0.25)
+
+            if abs(abs(self.orientation-self.theta[act])-5.50)<=0.01:
+                #print("I lose")
+                self.negat_reward+=log(0.5)
+            reward=self.negat_reward
+        return reward
 
         
 
@@ -170,17 +207,19 @@ class Boatareascan():
         #print("state=", self.state)
         #print("action=", act1)
         self.getState(act1)
+        if Boatareascan.nbAreaScan%400==0:
+            Boatareascan.step=True
         if not arrInList(self.myPointValide, self.state):
             self.myPointValide.append(copy.deepcopy(self.state))
-        self.get_rewards(M, act1)
+        reward=self.get_rewards(M, act1)
         if not self.state==self.next_state:
             self.orientation=self.theta[act1]
-        #print("reward=", self.reward)
+        #print("reward=", reward)
         #print("next_state=", self.next_state)
         previous=(self.state[0], self.state[1])
         self.state=(self.next_state[0], self.next_state[1])
         act2=self.take_action(0.0)
-        self.Q_table[previous][act1]=self.Q_table[previous][act1] + 0.1*(self.reward + 0.99*self.Q_table[self.state][act2]-self.Q_table[previous][act1])
+        self.Q_table[previous][act1]=self.Q_table[previous][act1] + 0.1*(reward + 1.0*self.Q_table[self.state][act2]-self.Q_table[previous][act1])
 
 
 def arrInList(L, arr):
@@ -188,6 +227,16 @@ def arrInList(L, arr):
         if (a==arr):
             return True
     return False
+
+def removearray(L,arr):
+    ind = 0
+    size = len(L)
+    while ind != size and not np.array_equal(L[ind],arr):
+        ind += 1
+    if ind != size:
+        L.pop(ind)
+    else:
+        raise ValueError('array not found in list.')
 
 
 def angle(a):
@@ -202,6 +251,8 @@ def sign(x):
 def norme(a):
     return sqrt(a[0]**2+a[1]**2)
 
+def prod_scal(a,b):
+    return a[0]*b[0]+a[1]*b[1]
 
 def point_attract(m, theta, psi_w, a):
     vect=-2*(m-a)
@@ -217,6 +268,29 @@ def point_attract(m, theta, psi_w, a):
     us=(pi/4)*(cos(psi_w-theta_bar)+1)
 
     return ur, us
+
+def controler_line(m, theta, psi_w, a, b, q):
+    nor=norme(b-a)
+    e=((b-a)[0]*(m-a)[1]-(b-a)[1]*(m-a)[0])/nor
+    phi=angle(b-a)
+    theta_bar=phi-2*Gamma*atan(e/r)/pi
+    if fabs(e)>r/2:
+        q=sign(e)
+
+    if (cos(psi_w-theta_bar)+cos(zeta))<0 or (fabs(e)<r and ((cos(psi_w-phi)+cos(zeta))<0)):
+        theta_bar=pi+psi_w - q*zeta
+    
+    if cos(theta-theta_bar)>=0:
+        ur=urmax*sin(theta-theta_bar)
+
+    else:
+        ur=urmax*sign(sin(theta-theta_bar))
+
+    us=(pi/4)*(cos(psi_w-theta_bar)+1)
+
+    return ur, us, q
+
+
 
 def pose1callback(data):
     global m1
@@ -278,6 +352,11 @@ def main():
     pub_valid3=rospy.Publisher("center_point3", Vector3, queue_size=10)
     pub_valid4=rospy.Publisher("center_point4", Vector3, queue_size=10)
 
+    q1, q2, q3, q4=1, 1, 1, 1
+    v=[]
+    for j in range(20):
+        for i in range(20):
+            v.append(np.array([-50.0+i*5.0+5.0/2.0, 50.0-j*5.0-5.0/2.0]))
     rate = rospy.Rate(100)
     t0=rospy.get_time()
     while not rospy.is_shutdown():
@@ -306,40 +385,59 @@ def main():
             boat3.getState(act3)
             boat4.getState(act4)
 
-            a1=np.array(boat1.next_state)
-            a2=np.array(boat2.next_state)
-            a3=np.array(boat3.next_state)
-            a4=np.array(boat4.next_state)
+            a1=np.array(boat1.state)
+            a2=np.array(boat2.state)
+            a3=np.array(boat3.state)
+            a4=np.array(boat4.state)
 
-            ur1, us1=point_attract(m1, theta1, psi_w, a1)
-            ur2, us2=point_attract(m2, theta2, psi_w, a2)
-            ur3, us3=point_attract(m3, theta3, psi_w, a3)
-            ur4, us4=point_attract(m4, theta4, psi_w, a4)
+            b1=np.array(boat1.next_state)
+            b2=np.array(boat2.next_state)
+            b3=np.array(boat3.next_state)
+            b4=np.array(boat4.next_state)
 
-            if norme(m1-a1)<2.:
+            ur1, us1, q1=controler_line(m1, theta1, psi_w, a1, b1, q1)
+            ur2, us2, q2=controler_line(m2, theta2, psi_w, a2, b2, q2)
+            ur3, us3, q3=controler_line(m3, theta3, psi_w, a3, b3, q3)
+            ur4, us4, q4=controler_line(m4, theta4, psi_w, a4, b4, q4)
+
+
+            if prod_scal(b1-a1,b1-m1)<0:
                 boat1.state=boat1.next_state
-                msgCenter1.x=a1[0]
-                msgCenter1.y=a1[1]
-                msgCenter1.z=1.0
-                pub_valid1.publish(msgCenter1)
-            if norme(m2-a2)<2.:
+
+            if prod_scal(b2-a2,b2-m2)<0:
                 boat2.state=boat2.next_state
-                msgCenter2.x=a2[0]
-                msgCenter2.y=a2[1]
-                msgCenter2.z=2.0
-                pub_valid2.publish(msgCenter2)
-            if norme(m3-a3)<2.:
+
+            if prod_scal(b3-a3,b3-m3)<0:
                 boat3.state=boat3.next_state
-                msgCenter3.x=a3[0]
-                msgCenter3.y=a3[1]
-                msgCenter3.z=3.0
-                pub_valid3.publish(msgCenter3)
-            if norme(m4-a4)<2.:
+
+            if prod_scal(b4-a4,b4-m4)<0:
                 boat4.state=boat4.next_state
-                msgCenter4.x=a4[0]
-                msgCenter4.y=a4[1]
-                msgCenter4.z=4.0
-                pub_valid4.publish(msgCenter4)
+
+            for i in range(len(v)):
+                if norme(m1-v[i])<2.:
+                    msgCenter1.x=v[i][0]
+                    msgCenter1.y=v[i][1]
+                    msgCenter1.z=1.0
+                    pub_valid1.publish(msgCenter1)
+                    #removearray(v, v[i])
+                if norme(m2-v[i])<2.:
+                    msgCenter2.x=v[i][0]
+                    msgCenter2.y=v[i][1]
+                    msgCenter2.z=2.0
+                    pub_valid2.publish(msgCenter2)
+                    #removearray(v, v[i])
+                if norme(m3-v[i])<2.:
+                    msgCenter3.x=v[i][0]
+                    msgCenter3.y=v[i][1]
+                    msgCenter3.z=3.0
+                    pub_valid3.publish(msgCenter3)
+                    #removearray(v, v[i])
+                if norme(m4-v[i])<2.:
+                    msgCenter4.x=v[i][0]
+                    msgCenter4.y=v[i][1]
+                    msgCenter4.z=4.0
+                    pub_valid4.publish(msgCenter4)
+                    #sremovearray(v, v[i])
 
             msg1.x, msg1.y=ur1, us1
             msg2.x, msg2.y=ur2, us2
@@ -357,31 +455,63 @@ if __name__ == '__main__':
     q_sail1, q_sail2, q_sail3, q_sail4=(0,0,0,0), (0,0,0,0), (0,0,0,0), (0,0,0,0)
     q_wind=(0,0,0,0)
     psi_w=euler_from_quaternion(q_wind)[2]
-    zeta=pi/4
+    zeta, Gamma=pi/6, pi/4
     urmax=pi/4
-    trainable=True
+    trainable=False
+    
+    r=2
     boat1=Boatareascan(-47.5, 47.5, -1.57, 0.0)
     boat2=Boatareascan(47.5, 47.5, -1.57, 0.0)
     boat3=Boatareascan(-47.5, -47.5, 1.57, 0.0)
     boat4=Boatareascan(47.5, -47.5, 1.57, 0.0)
 
+    #print("number of box scan=", boat1.nbAreaScan)
     if trainable:
         eps=1.0
         M=[boat1.myPointValide, boat2.myPointValide, boat3.myPointValide, boat4.myPointValide]
         for _ in range(10000):
-            step=0
-            while step<500:
+            
+            while True:
+                #print("For the boat 1")
                 boat1.train(eps, M)
+                #print("--------------------------------------")
+                #print("--------------------------------------")
+                if boat1.step:
+                    #print("number of box scan=", boat1.nbAreaScan)
+                    break
+                #print("for the boat 2")
                 boat2.train(eps, M)
+                #print("--------------------------------------")
+                #print("--------------------------------------")
+                if boat2.step:
+                    #print("number of box scan=", boat1.nbAreaScan)
+                    break
+                #print("for the boat 3")
                 boat3.train(eps, M)
+                #print("--------------------------------------")
+                #print("--------------------------------------")
+                if boat3.step:
+                    #print("number of box scan=", boat1.nbAreaScan)
+                    break
+                #print("for the boat 4")
                 boat4.train(eps, M)
-                step+=1   
+                #print("--------------------------------------")
+                #print("--------------------------------------")
+                if boat4.step:
+                    #print("number of box scan=", boat1.nbAreaScan)
+                    break
+                #print("number of box scan=", boat1.nbAreaScan)
 
-            eps=max(0.1, eps*0.9996)
+            print("new train")
+            eps=max(0.1, eps*0.96)
+            #print("M=", M)
             boat1.reset()
             boat2.reset()
             boat3.reset()
             boat4.reset()
+            print("--------------------------------------")
+            print("--------------------------------------")
+            print("number of box scan=", boat1.nbAreaScan)
         
         with open('/home/dembele/Workspace_Internship/devel/lib/sailboat/qtable', 'wb') as f:
             my_pickler = pickle.Pickler(f)
