@@ -1,0 +1,7 @@
+				Guide pour lancer la simulation
+
+Lorsque le logiciel vrep est ouvert, Charger le fichier .ttt
+
+Lancer la simulation
+
+Run le fichier simple_robotic_arm_v3_2020_cmd_ik.py
